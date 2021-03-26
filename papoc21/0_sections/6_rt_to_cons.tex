@@ -1,0 +1,47 @@
+\section{From \rts\ to \mcms} \label{sec:rt-to-cons}
+So far we have created a mapping from \mcms\ to \rts, by establishing the sufficient \rts\ to enforce any \synpat.
+In this section, we use this result to obtain the reverse mapping from \rts\ to \mcms,  focusing our discussion solely on regular \synpats, seeing as the enforcement of irregular \synpats\ is done by mapping them to regular ones.
+To obtain the mapping from \rts\ to \synpats, we reverse each of the three conditions, assuming that an operation can be of type $m$ or $n$ where $m, n \in$ $\{read, write\}$. Specifically, given a protocol that enforces a set of \prts\ $R_p$ and a set of \srts\ $R_s$, a \synpat\ $s$ is enforced when it abides by the following conditions:
+
+
+\squishlist
+\item \emph{Cond-1$'$} : $s$ can include a $\potype$ relation $po_{mn}$ if $prt_{mn} \in R_p$.
+\item \emph{Cond-2$'$}: $s$ can include a $\syntype$ relation $syn_{mn}$ if it is an $rf$ relation or $srt_{nm} \in R_s$. 
+\item {Cond-3$'$}: $s$ can start with an operation of type $m$ and end on an operation of type $n$, if $srt_{mn} \in R_s$.
+\squishend
+
+\beginbsec{Example}
+To showcase how these conditions can be used in practice, let us specify the \mcm\ $CM_{i}$ that is enforced by a protocol that enforces the rt-orderings $\prtww, \prtwr, \rtrw$ and $\rtwr$.  %
+To do so we must specify a set of \synpats\ $S_{CM}$  where each regular \synpat\ $s \in S_{CM}$ abides by the following rules:
+\squishlist
+\item Any $\potype$ relation in $s$ is either a $\poww$ or a $\powr$
+\item Any $\syntype$ relation in $s$ is either a $\synwr$ or a $\synrw$. ($rf$ is included in $\synwr$)
+\item $s$ must either start on a write and end on a read, or start on a read and end on a write.
+\squishend
+
+Notably, the interplay amongst the rules can be used to further simplify them. For instance the third rule asserts that from the available \srts\ ($\rtrw$ and $\rtwr$) it follows that either the first operation must be a read and the last a write or the reverse. However, neither of the available $\potypes$ ($\poww$ and $\powr$) start with a read and since a regular \synpat\ must start with a $\potype$ relation, it cannot be that the first operation is a read. Consequently, the first operation can only be a write, and thus the last operation must be a read, to abide by the third rule. 
+
+
+Similarly, because a regular \synpat, is a composition of alternating $\potype$ and $\syntype$ relations, it follows that the available $\potype$ and $\syntype$ relations can only be used if they can synergize. For instance, the $\synwr$ cannot be used at all because neither of the available $\potypes$ ($\poww$ and $\powr$) starts from a read.
+Similarly, because the $\synwr$ cannot be used, the $\poww$ cannot be used before any $\syntype$, nor can it be used as the last relation because the \synpat\ must end on a read. 
+
+\custvspace
+\noindent Therefore the rules for a \synpat\ $s \in S_{CM}$ are simplified as follows:
+\squishlist
+\item Any $\potype$ relation in $s$ must be a $\powr$
+\item Any $\syntype$ relation in $s$ must be a $\synrw$. 
+\item $s$ must start on a write and end on a read.
+\squishend
+
+
+As a result any regular  \synpat\ $s \in S_{CM}$ is a composition of alternating $\powr$ ans $\synrw$ relations. Below, we list a few examples \synpats\ in $S_{CM}$
+\begin{gather*}
+    s_{1} \triangleq \powr ; \synrw; \powr \\
+    s_{2} \triangleq \powr ; \synrw; \powr; \synrw; \powr\\
+    s_{3} \triangleq \powr ; \synrw; \powr;\ ...\ \synrw; \powr
+\end{gather*}
+
+
+Notably, enforcing the $\prtww$ and $\rtrw$ are not contributing towards enforcing any $s \in S_{CM}$. 
+
+

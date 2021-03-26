@@ -1,0 +1,46 @@
+\section{From \rts\ to Protocols} \label{sec:prot}
+
+In previous sections we established the mappings between the \synpats\ and the \rts. 
+In this section, we relate \rts\ to some well-known protocol design techniques. %
+We start with a brief discussion on the \prts\ and then we focus on the \srts.
+
+
+
+
+
+
+\subsection{Enforcing \rts}
+\Prts\ model the operation of the \rob\ specifying  when the memory system can begin executing an operation.
+Upholding the \prts\ is as simple as inspecting the state of the \rob.
+For instance, enforcing $\prtwr$ implies that the memory system cannot begin executing a read $r$ from process $p$, until every preceding write in the \rob\ is completed.
+
+
+
+\custvspace
+\Srts\ models how the memory system executes reads and writes.
+Below we discuss two common techniques that can be used to enforce \srts\ 1) \emph{overlap} and 2) \emph{lockstep}.
+
+\beginbsec{Overlap}
+The \srt\ $srt_{mn}$ can be enforced simply by ensuring that operations of type $m$ must overlap with operations of type $n$ in a physical location. For instance, we can enforce $\rtwr$, by ensuring that a write is propagated to $x$ nodes and a read queries $y$ nodes, where $x+y > N$ and $N$ is the number of nodes. 
+Alternatively, both types of operations can \qt{meet} in some centralized physical location (\eg the directory for multiprocessors). 
+To ensure all four \srts\ and thus linearizability, both reads and writes must query $y$ nodes to learn about completed operations and must broadcast their results to $x$ nodes. This is exactly how the multi-writer variant of ABD~\cite{Lynch:1997} operates.
+
+\beginbsec{Lockstep}
+Lockstep is %
+a technique, %
+where a memory system node first \qt{grabs a lock} on the object before beginning an operation and releases it when the operation completes. 
+Upon grabbing the lock, the node learns about the operation executed by the previous lock holder.
+The act of \qt{grabbing the lock} is similar to getting a cache-line in $M$ or $S$ state in a coherence protocol~\cite{Vijay:2020}, or becoming the leader of the next log entry in a state machine replication protocol, such as Paxos~\cite{Lamport:1998}. Notably, lockstep entails overlap as operations must meet in a physical location to exchange the lock, but it also precludes the operations from executing concurrently.
+
+There are two aspects of lockstep that can enforce \srts.
+First, the \srt\ between two operations is enforced if a lock must be passed from one to the other. 
+For example we can enforce $\rtww$ by mandating that a lock must be grabbed to perform a write.
+Second, locking also ensures that certain operations cannot overlap in real-time.
+When a write cannot overlap with a write and $\rtww$ is enforced then $\rtrw$ is also enforced. This is because if a read $r$ returns the value of write $w$, then a write $k$ that begins after $r$ has completed must also begin after $w$ has completed.
+Similarly, when a write cannot overlap with a read and $\rtwr$ is enforced, then $\rtrr$ is enforced. This is because if a read $r$ returns the value of write $w$, then it must be that $w$ completes before $r$ begins. Therefore, a read $m$ that begins after $r$ has completed, must also begin after $w$ has completed and thus will observe $w$.
+Protocols often combine the two aspects of lock-step to enforce the single-writer multiple-reader invariant (\SWMR)~\cite{Vijay:2020}, where for any given object at any given time there is either a single write in progress or multiple reads.
+This ensures that writes must grab a lock from each other ($\rtww$), reads must grab a lock from writes ($\rtrw$), writes cannot overlap in time ($\rtrw$) and writes do not overlap in time with reads ($\rtrr$).
+
+
+
+
