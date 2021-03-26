@@ -1,0 +1,34 @@
+\section{Classic Paxos Algorithm} \label{sec:cp}
+
+Here we will give a very brief overview of Classic Paxos through Table~\ref{tab:CP}.
+We will not explain why it works, but rather just how it works.
+There are two types of messages: proposes and accepts. A machine first issues proposes, if it gathers a majority of acks it then issues accepts. If accepts are acked by a majority of machines then the command is said to have been decided (\ie committed).
+
+Proposes and accepts carry logical timestamps (\ie TSes, discussed in~\ref{sec:prel:data}).
+Table~\ref{tab:CP} shows the case where machine M1 sends messages and M2 receives them.
+The leftmost column shows four potential messages that M1 can send, and the top row shows the four possible states that M2 can be in. We assume two timestamps \emph{H} and \emph{L}, where H > L. 
+The rest of the cells denote the answer that M2 sends to M1 based on  M1's message and M2's state. 
+Each cell is colour-coded as blue, red or green, allowing us to group similar cases. Below we discuss each of the colours, noting that the crux of the protocol is found in the red cells.
+
+\custvspace
+\beginbsec{Green cells}
+The green cells are when an accept message of M1 finds M2 having only received a propose with the same TS. This is the most straight-forward case where there has not been another intervening command, and M2 will always accept and reply with an ack.
+
+\custvspace
+\beginbsec{Blue cells} Blue cells capture obscure corner cases, such as propose-L finds that M2 has already seen a propose-L. This is obscure because TS should be unique and we should expect that no TS is used twice for proposes. These can occur for example when we send the message twice, because we suspect the first message was lost.
+These cells are not of particular interest to understanding CP.
+
+\custvspace
+\beginbsec{Red cells} Finally, red cells shows how CP handles Conflicts between commands with different Timestamps. The crux of this protocol lays here.
+Note the (simplified) rules.
+
+\begin{enumerate}
+\item Propose-H blocks propose-L and accept-L. I.e. proposes block proposes and accepts with lower TSes
+\item Accept-H blocks propose-L and accept-L. I.e. accepts block proposes and accepts with lower TSes
+\item Propose-L cannot block accept-H or Propose-H. I.e. proposes with lower TS are discarded
+\item Accept-L cannot block accept-H, but it does block propose-H forcing it to help it. I.e. accepts with lower TSes cannot block accepts, but they do block proposes, and force them to help them
+\end{enumerate}
+
+
+Note that our rules assume that proposes and accepts will all be seen by a majority of nodes and thus will intersect. Later we will relax this assumption (see \S\ref{sec:all-aboard}).
+\input{4_incl_graphics/CP-tab}

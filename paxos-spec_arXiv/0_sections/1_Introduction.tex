@@ -1,0 +1,60 @@
+\section{Introduction}
+
+In this paper we pose the problem of executing Read-Modify-Writes (\RMWs) over replicated data, assuming that machines can crash and that processing and networking delays can be unbounded.
+This is also known as solving \emph{asynchronous consensus}.
+Only that instead of assuming that machines must reach agreement on the next value of a \qt{register}, we assume that machines agree on the next \RMW\ to be executed over a replicated key-value pair that resides within an in-memory Key-Value Store (KVS).
+We also pose two additional requirements.
+
+Firstly, we are looking for a solution that does not sacrifice availability when a machine fails. This renders the majority of consensus protocols unsuitable for our purpose. For instance, consider leader-based~\cite{Lamport:2001, Ongaro:2014, Reed:2008} consensus protocol. When the leader fails the rest of the machines must block waiting for a timeout to expire before performing leader election. Such protocols sacrifice availability for the duration of that timeout.
+
+Secondly, we want to deploy the system in the datacenter over modern hardware. This means that the protocol must scale across the many cores of a modern server and must be able to utilize the high bandwidth of modern network interfaces. This requirement rules out the last standing protocol, EPaxos~\cite{Moraru:2013}, that can solve asynchronous consensus without availability penalties. This is because EPaxos is so complex that is not clear how it can be deployed in a scalable fashion across the many threads of each machine. Absent that thread-scalability, it is impossible to leverage the high bandwidth offered by modern networks.
+
+
+\custvspace
+The requirements of 1) solving asynchronous consensus, 2) avoiding any availability penalty and 3) leveraging modern hardware,  all point to 
+Classic Paxos~\cite{Lamport:1998} (from now on \emph{CP} or \emph{Paxos}), which solves asynchronous consensus without blocking on a machine crash or delay while it can be deployed on a per-key basis without requiring any synchronization across threads. However there is a problem.
+For each key, CP can decide only a single value once. 
+However, we must be able to perform many \RMWs\ on the same key.
+Therefore, to use CP, we must first extend it, such that it can run repeatedly for each key, while preserving important invariants such that each \RMW\ executes exactly once. Finally, we must make sure to avoid livelocks, which are a known issue of CP.
+
+
+\custvspace
+In this work we provide a detailed specification of how we extended and implemented Classic Paxos to execute Read-Modify-Writes in Kite~\cite{V:2020}. In addition, we also specify how we implemented All-aboard Paxos~\cite{Howard:2019} over Paxos and how we use carstamps~\cite{Burke:2020}, to also add ABD reads and writes, to accelerate the common case, where \RMWs\ are not needed.
+Our specification targets a Key-Value-Store that is deployed within the datacenter, is replicated across 3 to 7 machines and supports reads, writes and \RMWs.
+
+
+First, to allow CP to run repeatedly we use the abstraction of a log per key, but -- crucially -- without actually implementing a log per key. Specifically, every time we commit an \RMW\ for a key, we conceptually move to the next log entry, and we denote so through a single counter that remembers the current entry. The log abstraction allows us to execute CP repeatedly across the different entries, without actually modifying CP. The modularity of this approach is crucial as it allows us to rely on the well-established correctness guarantees of CP.
+
+Second, once we have established the log abstraction, we must ensure that an \RMW\ that has been committed in log entry $X$ can never be committed again in log entry $Y$, $Y > X$. We achieve this by tagging \RMWs\ with unique identifiers (\rmws), and remembering the latest \rmw\ committed from each session (bounded storage). In addition, we add commit messages to ensure that each replica knows when an \RMW\ has been committed, and can thus stop it from getting proposed again in the future.
+
+Finally, recall that our goal is to create a multi-threaded system that can stress the  many-core servers and high-bandwidth NICs found in today's datacenter. To achieve this we need to allow for thousands of \RMWs\ to execute concurrently. However such concurrency can be problematic with CP as it can trigger livelocks. We avoid this scenario by implementing a back-off mechanism that for each key, allows each machine to have at most one active \RMW. Furthermore, if machine M1 sees that machine M2 is trying to perform an \RMW, then M1 will back-off, giving M2 a chance to complete its RMW unencumbered.
+
+\custvspace
+Beyond extending CP, we also provide the specification of an optimization called All-Aboard Paxos, which we implemented over our CP implementation. All-aboard is an optimization sketched in Howard's thesis~\cite{Howard:2019} as an application of the Flexible Paxos~\cite{Howard:2016} theorem. To the best of our knowledge we are the first to fully specify and measure an All-aboard implementation.
+Finally, to provide a system that offers a read, write, RMW API, we implement ABD reads and writes using carstamps~\cite{Burke:2020} over our CP implementation.
+
+The rest of this paper is organized as follows.
+\secref{sec:cp} briefly describes how CP works (without our extensions).
+\secref{sec:prel} describes our execution model and the basic data structures that underpin our implementation.
+\secref{sec:prot} specifies our implementation of CP following the lifetime of a request. \secref{sec:backoff} and \secref{sec:help} explain how back-off and helping are implemented. \secref{sec:cor} provides a series of correctness arguments and informal proofs for our extensions. \secref{sec:why} provides the rationale behind an array of our design choices. \secref{sec:all-aboard} presents the theory and implementation of All-aboard Paxos. \secref{sec:writes} discusses how we added ABD writes to our implementation using carstamps~\cite{Burke:2020}. Finally, \secref{sec:reads} describes how we added ABD reads.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+

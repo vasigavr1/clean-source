@@ -1,0 +1,13 @@
+mkdir papoc21
+download overleaf zip in papoc21
+cd papoc21
+unzip *
+cd ..
+arxiv_latex_cleaner papoc21
+cd papoc21-arxiv
+cp ../papoc21/paper.bib .
+cd ..
+zip -r real-time-CR.zip papoc21_arXiv/
+Arxiv needs a .bbl, to get this from overleaf go to log and output files
+This needs to have the same paper as the main .tex (i.e. typically paper.tex and thus paper.bbl)
+Delete \usepackage{amssymb} from 1_packages

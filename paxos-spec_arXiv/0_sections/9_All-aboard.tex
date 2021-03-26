@@ -1,0 +1,69 @@
+\section{All-Aboard} \label{sec:all-aboard}
+
+Here we will describe an optimization to Classic Paxos, called All-aboard. All-aboard was proposed in Howard's thesis~\cite{Howard:2019}. We will give a brief description of it, focusing on how to implement it over our existing CP specification.
+In a nutshell the  All-aboard optimization does the following:
+instead of broadcasting proposes, you can propose locally and then accept locally and broadcast accepts. There are two catches: 1) the accept is successful only if acked by all 2) the accept must have a lower TS than any propose that gets broadcast for the same key and \logno.
+
+We will attempt this only in the first time an RMW runs; if the RMW is not successful in any way (\ie it fails to grab the \kv, or it fails to accept locally, or it fails to gather all the acks), then it simply executes Paxos instead. 99.7\% of completed RMWs are All-aboard, so there is really no reason to try adding it in more places.
+
+When All-aboard triggers, commits are also thinner, as they do not include the value.
+Despite removing propose messages and cutting most of the payload of commits the per-machine throughput only improves roughly from 5.5 million RMWs per second to 7.5. This is because the CPU is the bottleneck.
+
+\subsection{All-Aboard Theory}
+The theory of All-Aboard is presented in Howard's thesis. We will summarize here.
+The theory is underpinned by a rule called Flexible Paxos and its refinement.
+
+\custvspace\beginbsec{Flexible Paxos}
+It is only required for propose quorums to intersect with accept quorums.
+
+\custvspace\beginbsec{Refinement} 
+Actually, it suffices for proposes to intersect \emph{only} with accepts that have smaller TSes.
+
+\custvspace
+All-Aboard takes advantage. It sets up a threshold TS.version. Proposes with a lower TS than the threshold are seen only locally, while accepts must gather all acks. Proposes and accepts with a higher TS than the threshold are seen by a majority.
+
+There are two cases when reasoning a propose must always intersect with accepts with a lower TS: 1) a propose with a TS lower than the threshold will always intersect with \qt{lower accepts}, because \qt{lower accepts} are guaranteed to receive all acks.
+2) a propose with a TS higher than the threshold will always intersect with \qt{lower accepts}, because the propose must be acked by a majority and thus overlaps with all accepts.
+
+This allows us to optimistically start the Paxos command using a low TS (lower than the threshold) and avoid broadcasting proposes, going instead directly to accepts. If we are not able to gather all ack for the accept, we can then broadcast proposes using a higher TS (higher than the threshold).
+
+
+\custvspace
+\beginbsec{An aside: Singleton Paxos}
+Howard's thesis refers also to the dual of this: gathering all acks for proposes and only accepting locally.
+This does not actually work when we are not able to gather all acks for a propose. 
+Here's why.
+If we gather all acks for proposes for TS = X (similarly to all-aboard), then any propose with TS > X, must gather all acks, otherwise it will not intersect with accepts of TS = X.
+Therefore, we cannot do the trick where we start from low TSes, and then revert to bigger ones.
+Can we then do the opposite? Start from high timestamps and then if the propose fails revert to lower ones? No, because once nodes see a propose, they cannot ack any propose/accept with lower TS (this is often referred to as \qt{promise}).
+
+Therefore, for the Singleton algorithm we do not have a way to revert to Classic Paxos, and thus it is not really useful. %
+
+
+\subsection{Specification}
+Upon grabbing the \kv~for an RMW for the very first time we transition the \kv~and the \locentry~to \acced~state, and we perform the actions necessary to accept locally: we calculate the result of the RMW and we update the respective fields of the \kv~and the \locentry~(such as \accval, \accts, \rmw~etc.). We also raise a flag \allab~inside the \locentry. 
+
+Since the \locentry~is now in \acced~state we inspect its replies periodically as before.
+We know the \locentry~can only move forward if it receives \acks~from \emph{all} machines, because its \allab~flag is raised. 
+We handle accept replies as follows.
+
+If we find any nack, we transition the \locentry~according to the guide in Section~\ref{sec:prot:acc-recv}. This is because we need \emph{all} remote machines to \ack~the accept. Therefore any nack must trigger its effect without waiting for more replies, \eg any of \highprop/\highacc/\loghigh~will transition the \locentry\ to \retry~state. 
+If we have received only \acks~but not all of them, then we simply increment an a special counter called \allabtimeout, which is a field of the \locentry.
+If \allabtimeout~reaches a predetermined threshold, then we transition to \retry~state. 
+In the case where the local \kv~is still locally accepted for the current RMW, then the \qt{helping myself} case (described in Section~\ref{sec:how:retry}), gets triggered.
+
+
+The \allabtimeout~ensures that if a machine is slow (or failed) we will not indefinitely wait for it. Notably this timeout, can be arbitrarily small without any potential to violate correctness. Avoiding false positives however is advisable for performance.
+
+
+\custvspace
+\beginbsec{All-aboard TS}
+When executing all-aboard, we must guarantee that the used TS is smaller than the TS of every other propose. This is fairly straightforward; we always use a TS.version = 2, when running all-aboard. Remember that for CP, we always use a TS.version = 3. If all-aboard is not successful, then it will run CP (broadcasting proposes) and will have to use a TS.version >= 3. 
+
+\custvspace
+\beginbsec{Note}
+A final note -- obvious in hindsight -- but easy to miss, is that if we already suspect a remote machine to be slow/failed, we should avoid triggering the All-aboard optimization all together.
+If we do not, and then a machine is unresponsive for a few seconds, then during that time we will be constantly having to wait for the \allabtimeout~to expire. This would be terrible for performance. It is very easy to avoid this. If we have not recently heard of every other machine, we simply execute Classic Paxos for every RMW.
+
+
+

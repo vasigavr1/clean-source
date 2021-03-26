@@ -1,0 +1,172 @@
+\section{The protocol spec}\label{sec:prot}
+Here we will see the lifetime of an RMW step-by-step. The description includes a number of forward pointers explaining additional cases.
+
+
+\subsection{Grabbing the local KV-pair}
+When the worker pulls a new RMW for a session, it immediately takes it to the local KVS. If the \kv~is in \invalid~state, then the \kv~is \qt{grabbed} by the RMW, transitioning it in \proped~state and essentially stopping other RMWs from the same machine, from attempting RMWs. 
+If the \kv~is already grabbed, then the RMW must \emph{back-off} by transitioning its \locentry~to a state called \need.
+
+Note that if the \kv~can be in \invalid~state then the RMW on the previous \logno~has been committed:
+\kv.\comlogno~+ 1 == \kv.\logno. (It is possible that an RMW has worked on the current \logno~before, but it gave up and reverted it to \invalid~state-- discussed in \S\ref{sec:why:alreadycom}).
+
+
+Let us assume that the RMW successfully grabs the \kv. (Section~\ref{sec:backoff} discusses the \need~state as part of the back-off mechanism.)
+The RMW fills its corresponding \locentry, with information about its current state: the key to be RMWed, its \rmw, the \logno~it works on, and the TS it will use for the propose message. The TS.version can be any arbitrary number. We use the number 3 (this will become important when discussing the All-aboard optimization in Section~\ref{sec:all-aboard}). The TS.machine-id is the machine-id of the proposer.
+
+
+
+\custvspace
+\beginbsec{Propose}
+The RMW must broadcast propose messages to the rest of the machines. A propose message includes the key, the TS of the propose, the \logno~and the \rmw. 
+
+\subsection{On receiving a propose}
+The receiver will go to its local KVS to examine the \kv~and sent back one of the following replies: \alreadycom, \loglow, \loghigh, \highprop, \highacc, \lowacc, or \ack.
+Note that all replies that are not an \ack~are essentially a nack.
+The replies always include an opcode.
+Below we discuss the following: when each reply is triggered, what is its additional payload and what happens to the \kv~in the machine that sends the reply. 
+
+\squishlist
+\item \alreadycom: if the \rmw~of the propose message has been registered.  The reply message does not include additional payload. The \kv~is not altered. (Section~\ref{sec:why:alreadycom} elaborates on this.)
+
+\item \loglow: if the \logno~of the propose message is smaller than the current working
+\logno~of the \kv. This means the proposer does not know of the latest committed RMW, and thus attempts to commit on an already used \logno. The reply message includes the last committed RMW (\comlogno, \comrmw~and value). The \kv~is not altered.
+
+\item \loghigh: if the \logno~of the propose message is higher than the current working \logno~of the \kv. This means the proposer knows of a committed RMW, that the receiver does not know of. The reply message does not include additional payload. The \kv~is not altered.
+
+\item \highprop:  if the \kv~is in \proped~state but with a higher or equal \propts~than the propose's TS. The reply message includes the \propts~of the \kv. The \kv~is not altered.
+
+\item \highacc: if the \kv~is in \acced~state but with a higher or equal \propts~than the propose's TS. The reply message includes the \propts~of the \kv. The \kv~is not altered. (This is identical as above.) (Note: the \accts\ is not inspected at all, because if the \propts\ is higher than the propose's TS, the proposer has to retry either way.)
+
+\item \lowacc: if the \kv~is in \acced~state and its \accts~is lower than the propose's TS. Crucially, the \kv~remains in \acced~state, but its \propts~is advanced to the propose's TS, if it is smaller. The reply message includes the details of the accepted rmw, \ie  the \accts, the \rmw, and the \accval. 
+
+\item \ack: if the \kv~is currently in \invalid~state, or the \kv~is in \proped~state with a lower \propts~than the propose's TS.
+The \kv~goes to \proped~state and updates its proposed-TS. The reply message does not include any payload.
+\squishend
+
+
+\subsection{On receiving a propose-reply}
+The replies are steered to local entries (as explained in \S\ref{sec:base:loc}).
+The worker periodically polls active \locentries\ and takes action when the \locentry~signals that a majority (or more) of replies has been gathered or  one reply of type \alreadycom/\loglow/\highprop/\highacc\ has been received. With 5 machines we wait for 2 replies, since we already have a reply --typically an \ack, but not always-- from the local machine. Then the worker acts on the replies as follows.
+
+Note that when processing the replies, there is a question of priority; \eg if there is 1 seen-higher-acc, 1 seen-lower-acc and 2 acks, what should we do? The following discussion takes that into account.
+
+\squishlist
+
+\item \alreadycom: if any \alreadycom~is received, then the proposer commits its RMW in the local \kv~(using the \locentry~fields \accval~and \acclogno). The \locentry~transitions to \bcast~state so that commits are broadcast (again using the \locentry~fields \accval~and \acclogno). \secref{sec:cor:inv3-nec} explains why using \accval\ is correct. \secref{sec:why:alreadycom} shows an optimization that allows us to avoid broadcast commits when not necessary.
+
+\item \loglow: if any \loglow~is received, the RMW it contains is committed in the local \kv.
+If none of the above replies have been received, then the \locentry~transitions to \need~state, so that it tries to grab the entry again, but in a later \logno. Section~\ref{sec:why:loglow} elaborates on this.
+
+\item \highprop/\highacc: if a \highprop\ or \highacc~is received and none of the above is received then the \locentry~transitions to \retry~state. The RMW then will retry to broadcast proposes using a TS that is higher than all TSes included in the received replies. Section~\ref{sec:how:retry} describes in detail the different cases when retrying.
+
+\item \ack: if a majority of \ack~replies has been gathered and none of the above is received, then the RMW will attempt to accept locally, by transitioning the local \kv~to \acced~state.
+Section~\ref{sec:how:accept} describes in detail the different cases when accepting locally.
+If it is successful, it will then calculate the \accval, store it in the \locentry~and the \kv, store the \logno~in the \locentry~as \acclogno~and broadcast accepts. The accept messages will include, the \accval, the \logno, the \rmw~and the same TS as the propose.
+
+\item \lowacc: If a \lowacc~reply has been gathered and none of the above conditions have been triggered, then we will attempt to help the received RMW. Section~\ref{sec:how:accept} describes in detail how helped RMWs are accepted locally. After accepting locally, accepts for the helped RMW are broadcast.
+
+\item \loghigh: If a \loghigh~reply has been received and none of the above has occurred (\eg with 5 machines we have received 1 \loghigh~and the 2 \acks), then we retry the RMW, transitioning the \locentry~to \retry-state. Retrying is discussed at length in Section~\ref{sec:how:retry}. Notably, if this occurs repeatedly, we will timeout, broadcasting commits from the immediately previous \logno. This is discussed in detail in \secref{sec:loghigh} .
+
+\squishend
+
+\custvspace\beginbsec{Priority}
+The priority is due to performance and not correctness.
+If the RMW has been committed, we should not waste our time with other replies.
+If we are working on an already committed \logno, the same.
+If our TS is too small, we should not bother checking acks, we will probably end-up loosing anyway. Similarly, if acks have been gathered, we should not try to help a lower-TS accept, as we are sure to have blocked it. Finally, we should only care about the \loghigh~reply, only if none of the above is triggered.
+
+
+
+\subsection{Accept}
+After managing to accept locally, accept messages are broadcast to remote machines.
+Note that when accepting locally the value-to-be-written and value-to-be-read for the RMW are calculated. The value-to-be-written is called \accval. The \accval, must be stored in both the \kv's metadata in the KVS and the \locentry. 
+The \kv~needs the \accval~to facilitate help, by responding to proposes with higher TS with the \lowacc~reply, that includes the \accval. The \locentry~needs the \accval, both to create accept messages that will be broadcast, but also in case it gets helped by another machine, to know what value must be read. Help is discussed in Section~\ref{sec:help}, reading the correct value is discussed in Section~\ref{sec:cor:inv3-nec}.
+The accept messages will include, the \accval, the \logno, the \rmw~and the same TS as the propose.
+
+
+
+\subsection{On receiving an accept} \label{sec:prot:acc-recv}
+The receiver will go to its local KVS to examine the \kv~and send back one of the following replies:
+\alreadycom, \loglow, \loghigh, \highprop, \highacc~or \ack.
+Note that all replies that are not an \ack~are essentially a nack.
+The replies always include an opcode.
+Here is when each reply is triggered, what it is its additional payload and what happens to the \kv~in the receiving side. A lot of the replies are identical to the ones described for the propose, in that case we will simply denote so.
+\squishlist
+\item \alreadycom: <identical to propose>
+\item \loglow: <identical to propose>
+\item \loghigh: <identical to propose>
+
+\item \highprop:  if the \kv~is in \proped~state but with a higher (but not equal, this is the difference with propose-replies) \propts~than the accepts's TS. The reply message includes the \propts~of the \kv. The \kv~is not altered. 
+
+\item \highacc: if the \kv~is in \acced~state but with a higher (but not equal, this is the difference with propose-replies) \propts~than the accept's TS. The reply message includes the \propts~of the \kv. The \kv~is not altered. (This is identical as above.)
+
+\item \ack: if the \kv~is currently in \invalid~state, or the \kv~is in \proped~state with a lower or equal \propts~than the accept's TS, or the \kv~is in \acced~state with a lower or equal \propts~than the accept's TS.
+The \kv~goes to \acced~state and updates its \propts, \accts~and \accval. The reply message does not include any payload.
+\squishend
+
+
+
+\subsection{On receiving an accept-reply}
+Identically to the propose replies, accept replies are steered to \locentries~(as explained in \S\ref{sec:base:loc}).
+The worker periodically polls active \locentries~and takes action when the \locentry~signals that a majority (or more) of replies has been gathered, or if one reply of type \alreadycom/\loglow~has been received.
+With 5 machines we wait for 2 replies, since we already have a reply 
+-- always an \ack, because we must have accepted locally--
+from the local machine. Then the worker acts on the replies as follows. (Note that the list below also denotes the priority with which replies are handled).
+
+\squishlist
+
+\item \alreadycom: <identical to propose> 
+
+\item \loglow: <identical to propose> 
+
+\item \ack: if a majority of \ack~replies has been gathered and none of the above is received, then the \locentry~transitions to \bcast~state, so that it broadcasts commits the next time it is inspected.
+
+\item \highprop/\highacc: <identical to propose>.
+
+\item \loghigh: If a \loghigh~reply has been received and none of the above has occurred then we retry the RMW, transitioning the \locentry~to \retry-state. Retrying is discussed at length in Section~\ref{sec:how:retry}. This is different than proposes, as repeated \loghigh~replies do not lead to a commit. This is discussed at length in \ref{sec:loghigh}.
+
+\squishend
+
+\custvspace\beginbsec{Helping}
+If the accept was helping (the \locentry~has a \helpflag~to let us know), then if 
+any one nack is received (\ie one of \alreadycom, \loglow, \highprop, \highacc, \loghigh), then we stop helping (lowering the \helpflag) and transition the \locentry~to the \need~state, where it will attempt to \qt{grab} the \kv~to perform its own RMW.
+
+Otherwise, if a majority of \acks~are gathered, we broadcast a commit message by transitioning the \locentry~to \bcasthelp~state (so that it knows to broadcast the value getting helped).
+
+
+\custvspace\beginbsec{Explanation of priority}
+Firstly, if the RMW has already been committed or the \logno~has been used, then there is no reason into inspecting other replies.
+Again as before there is a question of priority.
+The Paxos invariant is that if a majority of machines ack an accept, then that command is committed.
+Therefore, if a majority of \acks~is received, we can prioritize it.  
+Otherwise if any of \highprop/\highacc/\loghigh~has been received, the worker will create a TS higher than all received and switch the \locentry~to the state \retry.
+
+Note that it is possible that a majority of machines have acked our accept, but we don't see that (i.e. because we only inspected 2 out of 4 replies and one of the two was a \highprop~reply). One of two things can happen in this case: we will get helped by a remote machine, or we will end-up \qt{helping ourselves} (help is discussed in \S\ref{sec:help}). 
+
+
+\subsection{Commits}
+On inspecting the \locentry~and finding it in state \bcast~or \bcasthelp, commit messages are broadcast. 
+
+\custvspace\beginbsec{Why commits}
+In principle, an RMW is committed if it has been accepted by a majority of machines.
+Still commit messages are necessary. The reason is that it is impossible to know whether an RMW that is accepted, is also committed, unless you help it yourself.
+Therefore, without commits before beginning an RMW you would have to first help any previously accepted RMW, even if that has happened a long time ago.
+In addition, commits ensure that an RMW can not be committed twice (\eg helped in \lognoeq 5, and then committed by the originator again in \lognoeq 7, is possible without commit messages). Finally, they allow us to reply to the client with the guarantee, that if they read they will see the committed value, without having to run Paxos. In Section~\ref{sec:cor}, we show how commits help us ensure the correctness invariants for moving across \lognos.
+
+
+\custvspace
+Commits include all of the RMW details (its \rmw, \logno~and \val). This allows us to ensure that even machines that have not seen the previous accept messages can commit the RMW.
+However machines that have acked this RMW already have this data. We discuss the implementation of an optimization that leverage this observation in Section~\ref{sec:how:commits}.
+
+After broadcasting commits, \locentry~is transitioned to the \committed~state. 
+Commits are always acked; upon gathering a majority of acks, we commit the RMW locally and reply to the client that the RMW is completed including the value to be read.
+Receiving a commit message always results in an unconditional commit of the RMW.
+When committing, we must register the new RMW, if not already registered, we must update the \val, \comlogno~and~\comrmw~fields of the \kv~if no later \logno~has been committed and we must transition the \kv~in \invalid~state, if it currently works on the \logno~to be committed.
+
+
+
+
+\subsection{A Note on the accepted-TS}
+You may be tempted to optimize away the \accts~of the \kv, after all it is only used once. Do not. It is an integral part of the Paxos algorithm and critical for correctness. Without the \accts~the proposers have no idea what they should help, and the receivers of proposes do not know what to tell proposers they should help.
+
+In a nutshell, the \propts~is there to block lower proposes and accepts. The \accts~is there to tell proposes what they should help.

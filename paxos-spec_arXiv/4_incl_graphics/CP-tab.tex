@@ -1,0 +1,58 @@
+
+\def\redcell{\cellcolor[HTML]{f4bfb4 }}
+\def\greencell{\cellcolor[HTML]{ c1f4b4 }}
+\def\bluecell{\cellcolor[HTML]{b4bbf4}}
+\begin{table}[t]
+\centering
+\resizebox{0.48\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ &
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M2}:  \\ Already seen \\ propose-L\end{tabular} &
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M2}:  \\ Already seen\\ accept-L\end{tabular} &
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M2}:  \\ Already seen\\ propose-H\end{tabular} &
+\cellcolor[HTML]{C0C0C0}
+\begin{tabular}[c]{@{}c@{}}
+\textbf{M2}:  \\ Already seen\\ accept-H
+\end{tabular} \\ 
+\hline
+  
+  
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M1}:  \\ 
+Sends propose-L 
+\end{tabular} &
+\bluecell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular}& 
+\bluecell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular}&
+\redcell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular}&
+\redcell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular} \\ 
+\hline
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}
+\textbf{M1}:  \\ 
+Sends accept-L 
+\end{tabular}&
+\greencell Ack &
+\bluecell Ack&
+\redcell \begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular} &
+\redcell \begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular} \\
+\hline
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M1}:  
+\\ Sends propose-H 
+\end{tabular}&
+\redcell  Ack &
+\redcell\begin{tabular}[c]{@{}c@{}}Nack -\\ Help\end{tabular}&
+\bluecell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular}&
+\bluecell\begin{tabular}[c]{@{}c@{}}Nack-\\ restart\end{tabular}\\ 
+\hline
+\cellcolor[HTML]{C0C0C0}\begin{tabular}[c]{@{}c@{}}\textbf{M1}:  \\ Sends accept-H \end{tabular}&
+\redcell Ack  &
+\redcell Ack  &
+\greencell Ack  &
+\bluecell Ack\\ 
+\hline
+\end{tabular}
+}
+\caption{A simplified version of the core CP algorithm}
+\label{tab:CP}
+\end{table}
+
+

@@ -1,0 +1,51 @@
+ \def\systemnameRaw{}
+\def\systemname{\systemnameRaw\xspace}
+\PassOptionsToPackage{usenames, dvipsnames, table, xcdraw}{xcolor}
+\documentclass[sigplan, screen]{acmart}
+\settopmatter{printacmref=false, printccs=true, printfolios=true}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\input{1_packages.tex}
+\input{2_macros_n_comments.tex}
+
+
+\title[Extending Classic Paxos for High-performance RMW Registers]{Extending Classic Paxos for High-performance Read-Modify-Write Registers}
+\input{0_authors/author-acm}
+
+
+\begin{document}
+
+\maketitle
+\pagestyle{plain}
+
+
+
+
+
+
+
+\input{0_sections/1_Introduction}
+\input{0_sections/2a_CP}
+\input{0_sections/2b_Baseline-Architecture}
+
+\input{0_sections/3_Protocol}
+\input{0_sections/4_Back-off}
+\input{0_sections/5_Help}
+\input{0_sections/6_Correctness}
+\input{0_sections/8_Performance}
+\input{0_sections/9_All-aboard}
+\input{0_sections/z10_Carstamps}
+\input{0_sections/z11_Reads}
+ \input{0_sections/z12_conclusion}
+
+
+
+
+
+
+\bibliographystyle{IEEEtranS}
+\bibliography{paper}
+
+
+
+\end{document} 

@@ -1,0 +1,140 @@
+\section{Why and how} \label{sec:why}
+
+In this section we are tying loose ends, discussing the why and the how of several implementation choices an optimizations.
+
+
+\subsection{Why: \alreadycom} \label{sec:why:alreadycom}
+Assume M1 sends a a propose/accept for an RMW that has already been committed; M2 replies
+back with an \alreadycom~message that contains the entire last committed rmw.
+
+
+Firstly the \alreadycom~reply is absolutely essential, to ensure exactly-once semantics, seeing as RMWs can be helped. 
+
+When M1 receives the \alreadycom~rep it attempts to commit its RMW locally, using the last-accepted-value and the accepted-log-no from its \locentry.
+
+In addition, M1 needs to ensure that, before it reports completion of the RMW to the client, a majority of machines have committed it.
+To do that it may need to broadcast commits from the RMW.
+However, if M2 has already committed a later \lognox, than the one M1 is shooting for (\eg \lognoeq Z), that means that the RMW has been already committed in a \logno~<= Z, and thus it is guaranteed to have been committed in a majority of machines (inv-1 in \S\ref{sec:cor:invs}).
+M2 includes that information in the opcode, to help M1 avoid unnecessary commits.
+Therefore, two different opcodes are used for \alreadycom~rep, as a performance optimization.
+
+\custvspace\beginbsec{Optimization}
+We are implementing one more optimization.
+If the \acclogno of the \locentry~is  X and its \lognoeq Z, and if Z > X, this means that the RMW has been committed (from a helper) in an older \logno. 
+There is then the potential problem, that the RMW has now grabbed the \kv~for the fresh \lognoeq Z, which it did not released when it committed itself on the older \lognoeq X.
+That may delay other local RMWs that are attempting to grab the \kv, but are waiting.
+To alleviate this, if we detect this case (\locentry.\acclogno < \locentry.\logno, after receiving an \alreadycom reply), we inspect the \kv~and if it's still held in \proped~state we revert it to \invalid~state. (The \kv~cannot be in \acced~for that RMW in this case, because that would mean that an RMW was accepted locally, but then learnt it was committed in a previous \logno, which is impossible -- from inv-3 \S~\ref{sec:cor:invs}.)
+
+Note something very important: this optimization means that a \kv~can transition to \invalid~state without advancing its \comlogno.
+
+
+\custvspace
+It's worth noting, that optimizations are not really important for \alreadycom~replies as they are  triggered only once every 5k to 50k committed RMWs. 
+
+\subsection{Why: Log-too-low} \label{sec:why:loglow}
+
+The \loglow-means that the RMW was attempting to commit in a \logno~that has been used by a different RMW. Therefore, the RMW must go and work in a bigger \logno. As a result the TSes used so far are meaningless because they refer to a specific \logno. The RMW must start fresh. Also it must grab the \kv~from scratch, because the \logno~it used to have is gone as we committed the RMW included in the \loglow~reply.
+
+\subsection{Why: Seen-lower-acc} \label{sec:why:lowacc}
+
+Firstly, why is it okay to handle \lowacc~replies with higher priority than \loghigh~ones?
+Because, if anyone has accepted a value locally, then it must be that majority of machines already knows the committed RMWs in previous logs.
+
+There is a case where a \lowacc~reply can be turned into an \ack~purely as a performance optimization.
+Specifically, on receiving a propose, if the same \rmw~is in \acced~state, with a lower \propts~and a lower \accts, then we simply return an \ack~to the proposer. This is correct because returning a \lowacc~reply and the \ack~tell the proposer the same exact thing: broadcast accepts using your TS for the RMW you are doing.
+
+
+\subsection{How: Retrying} \label{sec:how:retry}
+
+An RMW may attempt to retry. This happens when receiving a \highprop/\highacc~to a propose/accept or when receiving a \loghigh~reply.
+
+Here are the steps to retry:
+First we check if our RMW has already been committed (\ie registered), (because it may have gotten help). In that case, we need to broadcast commits, to ensure that we will not respond to the client, unless we know that the RMW has been committed by a majority.
+
+Beyond that, there are two cases where the RMW can retry:
+1) the \kv~is \qt{still-proposed} \ie it's is in \proped~state for the RMW that is attempting to retry or 2) the \kv~is \qt{still-accepted} \ie it's is in \acced~state for the RMW that is attempting to retry or, 3) the \kv is in \invalid~state, but in a greater \logno.
+
+If the \kv~is still-proposed, or \invalid, then we simply grab the \kv~transitioning to \proped~state(if it's \invalid), then we transition the \locentry~to \proped~state and broadcast proposes. The propose uses a \qt{higher TS} if it has been triggered by a \highprop/\highacc~reply.
+
+
+\custvspace\beginbsec{Helping myself}
+The case where \kv~is still-accepted is more subtle. The \locentry~still transitions to \proped~state and broadcasts proposes, but the \kv~remains in \acced~state. 
+The \locentry~treats this as \lowacc~reply, but transitions its \helpflag~to \emph{Propose-locally-accepted} state. 
+
+As with any \lowacc~reply, the \locentry~records the \accts~of the local \kv~and compares it with any other \accts~of any incoming \lowacc~reply.
+If no \lowacc~reply, with a higher \accts~is received, and when inspecting the propose replies, the \lowacc~reply is triggered (\ie we have not received a \alreadycom/\loglow or a majority of \acks) then the \locentry, realizes it must \qt{help itself} and therefore it acts as if it had received a majority of \acks. It updates the \accts~in the \kv~and it broadcasts accepts for its RMW.
+
+Notably, if a \lowacc~reply with a higher \accts~is received then the \helpflag~is transitioned back to default (which is \emph{Not-helping}).
+
+
+\subsection{How: Accepting locally} \label{sec:how:accept}
+
+First let's assume the case where the RMW is not helping, \ie it's trying to get the \kv~to accept itself, not some other RMW.
+
+\custvspace
+\beginbsec{Not helping}
+We first check the registered RMWs, if the RMW is already committed then the \locentry~transitions to \bcast~state, so that commits will be broadcast using the \accval~and \acclogno~of the \locentry.
+
+The \kv~will accept locally (\ie transition to \acced~state) if it is still in \acced~or \proped~state for this RMW, \ie its \rmw~matches, its \logno~has not moved and its \propts~is the same as that of the \locentry. If that happens, we then decide the new value created by the RMW, and we store it both in the \locentry~and in the \kv~(as \accval).
+
+If the \kv~does not accept locally, it can be because another propose/accept has been received for a different RMW (or even for the same RMW, if someone else is helping us) with a higher TS.
+Or it can be because, the \logno~has been committed. In any case, the \locentry~will transition to \need~state, so that it attempts to grab the \kv~the next time it is inspected.
+
+\custvspace
+\beginbsec{Helping}
+Assume that l-RMW helps h-RMW.
+We are trying to locally accept h-RMW, because we have received a \lowacc~reply to a propose message for l-RMW. Note that the \lowacc~reply may have originated from the local \kv~in the case where h-RMW is already locally accepted, but was stuck and the backoff counter timed out, so we issued proposes for l-RMW.
+
+We don't need to check the registered RMWs here -- it's not wrong to do so-- but if h-RMW has been committed, it has to be in the present \logno~and we will not be able to accept locally anyway. We will not need to broadcast commits for h-RMW, if we learn it already has been committed. In all cases where the local accept of h-RMW fails, we will simply stop helping and revert to working on l-RMW, by transitioning the \locentry~to \need~state and lowering it \helpflag. 
+
+
+There are four cases where we should accept h-RMW locally.
+1) The \kv~is still in \proped~state for our RMW and exactly as we left it,
+2) The \kv~is in \invalid~state but without having advanced its \comlogno~(which is extremely rare but possible, as explained in \S~\ref{sec:why:alreadycom}), 
+3) The backoff counter has timeout for an accepted RMW and the \kv~is still in \acced~state, for that same RMW,
+4) Finally, it is possible that l-RMW got locally accepted, then it retried, then it received a \lowacc~reply for h-RMW from a remote machine. If h-RMW has a higher \accts~than the \accts~that l-RMW was originally locally accepted with, then l-RMW must help h-RMW.
+
+In all four cases, we accept locally: \ie the \kv~transitions to \acced~state, and it updates its \rmw, its \accts and its \accval.
+The \locentry~transitions to \acced~state, and broadcasts accept messages that contain the value and \rmw~of h-RMW, but the TS used by l-RMW (that's just Paxos rules of helping).
+
+If none of the four cases occur, we immediately stop helping and we transition the \locentry~to \need~state, such that it will start the l-RMW from scratch. The reason is that if we cannot get h-RMW to be accepted locally, it must mean that the \kv~is grabbed by some other RMW, or the \logno~has been taken, in either case we need not bother with h-RMW anymore.
+
+\subsection{How: Committing} \label{sec:how:commits}
+
+\beginbsec{Optimization}
+If we receive all the acks (one from every machine including the local one) for the accept, then we do not include the value in the commit message.
+The optimization is triggered always in All-aboard (so almost in all RMWs in that case), but it has no impact on performance, even though it substantially reduces network usage. The reason is that we are bottlenecked by the CPU and not the network.
+
+The reason we only apply the optimization when \emph{all} remote machines have acked, is that otherwise we would have to send different commit messages to different machines (no value to those who have acked the accept!). However, this is not a good idea: the commit gets inserted in a larger coalesced broadcast message with other commits, accepts, writes etc. That message is then sent to allow remote machines. The invariant is that all remote machines receive the same message. If commits would have variable size w.r.t. the receiver, then we would loose the ability to create these large coalesced messages.
+
+We could also avoid sending the \rmw. However, then the \kv~would have to remember the last-accepted-rmw-id, which is not a big issue (we would just add that field to the \kv). We would then register that last-accepted-rmw-id, which would also be fine: 
+in case the last-accepted-rmw-id has been updated in the interim, that has to mean that someone else committed the RMW. However, since there was no performance benefit to removing the value from the RMW, we chose to keep the \rmw~to help with debugging.
+
+
+\subsection{Why: Log-too-high}\label{sec:loghigh}
+Here we discuss 1) why a commit message is triggered after receiving repeated \loghigh~replies and 2) how committing an RMW only after receiving acks for its commit message helps.
+
+It is possible that Machine M1 dies while issuing commits.
+M2 is the only machine, that gets a commit and thus M2 blissfully issues a propose in the next slot, but there is a chance that the propose will never get acked: if no other machine is trying to do an RMW on it, then the other machines will not learn of the commit. M2 detects this case after receiving a few consecutive \loghigh~replies for the same propose and broadcasts a commit for the previously committed RMW, by reverting the local-entry to \bcasthelp~and filling the help from \kv~with the last committed RMW (its log-no, value and RMW-id are all known as they must be stored on the \kv).
+
+Note that commits are only triggered by proposes that get \loghigh~nacks. This is because an accept that gets a \loghigh~will result in sending propose messages again (\ie the \locentry~will go to \retry~state).
+
+\beginbsec{Pathological case} 
+It can be that we end up in the following pathological case: a propose gets acked but the accepts gets \loghigh, resulting in retrying proposes which get acked and so on for ever. This is very unlikely, because it would mean that repeatedly proposes get acked by a certain majority and accepts by a different one.
+One could handle this case be triggering commits of the \comlogno. We have not. 
+
+\beginbsec{Committing after commit acks}
+To mitigate the performance impact, we must ensure that machines do not try to propose too fast (we focus on proposes as they come before accepts and are thus more likely to be \qt{early}).
+If machines propose timely, after commits have been delivered, then these replies will not trigger in most cases  and therefore no harm, no foul.
+
+When Machine M1 broadcasts commits for \lognox, this allows M2 to receive and apply the commit and then propose on \lognox~+ 1. However, in the common case, there is enough time for the rest of the machines to have received the commit before they receive M2's propose. Indeed, this is the case in our setup.
+However, other local threads/sessions within M1, can see the commit much earlier and waste resources on issuing proposes that will receive a \loghigh~reply. 
+For this reason, M1 applies the commit to its local \kv, only after it has received one commit ack (we actually do it after a majority of acks, but 1 ack will not be any different).
+
+As a result, there is no performance penalty from adding the \loghigh~replies. Roughly, a single \loghigh~reply is sent once for every 3 thousand committed RMWs.
+
+
+
+
+
+

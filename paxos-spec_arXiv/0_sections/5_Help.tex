@@ -1,0 +1,29 @@
+\section{Help} \label{sec:help}
+
+If a propose finds a \kv~in \acced~state with a lower \accts, then help must be triggered. The reason is that, it is possible that the propose reached some machines before the Accept. Therefore, the Accept is blocking the propose in some machines, and the Propose is also blocking the Accept in some machines. The proposer cannot know for sure, because it only inspects a majority of responses and therefore it pessimistically breaks the deadlock, by helping the Accept.
+
+A propose helps the accept, by broadcasting accepts with its own TS. This is crucial. The proposer will use its own TS, which is the big one. Why does then a \lowacc~reply has the \accts~inside it, if it's not going to be used? Because the propose must help the highest \accts. Again this is a matter of correctness.
+
+
+Help can occur when a \lowacc~reply is received to a propose, or when the \locentry~times out on waiting to grab the \kv~locally, and the \kv~is in \acced~state.
+
+\custvspace
+\beginbsec{Helping after a \lowacc~reply}
+Assume we broadcast a propose for an RMW -- let's call it l-RMW -- and we receive a reply \lowacc~from a different RMW -- let's call it h-RMW. We then attempt to help h-RMW. However, after we have finished helping h-RMW, we must go back to executing our own l-RMW.
+To help us, the \locentry~has the following fields: a flag called \helpflag, that is raised to denote that the \locentry~is currently helping h-RMW, and a \helploc, a data structure similar to the \locentry, which will be used to store information about the h-RMW, ensuring that no information about l-RMW is overwritten.
+
+From that point we move as before, attempting to accept h-RMW locally and then commit it.
+However, if we are not able to accept locally, or if we receive a \highprop~or \highacc~reply, then the help is cancelled: we take down the \helpflag~and we transition the \locentry~to \need~state, so that it starts over.
+
+If we manage to receive a majority of acks for h-RMW, that means it is committed. We then transition the \locentry~to \bcasthelp~state, denoting that commits must be broadcast, but they must use the \helploc~for the correct value. Finally, when a majority of commit acks have been gathered, we commit to the local KVS, the \helpflag~goes down and the \locentry~transitions to the \need~state. Notably, if we were helping ourselves, we should detect it and simply free the session.
+
+\custvspace
+\beginbsec{Help after waiting locally}
+In the case, where we timeout on attempting to grab a \kv~locally, which is in \acced~state, the \kv~cannot be stolen (like we would do if it were in \proped~state).
+The reason is that the \acced~RMW --let's called it h-RMW -- may be accepted by 3 out of 5 machines and thus committed. It is possible that the issuer had broadcast commits and then died, and thus it is possible that out of the 4 remaining machines, one received the commit and has been reading the RMW, two machines have no idea about the h-RMW and our local machine has \acced~but not received the commit. Therefore, if we were to simply steal the \kv, and put it in \proped~state, we would open the door for other RMWs to be committed in the \logno, where an RMW is already committed.
+
+Therefore, we must act as if we had sent a propose message to the local KVS and it has responded with a \lowacc~reply. The \kv~remains in \acced~state, but its \propts~is advanced to the TS of our propose (for the propose we use a bigger TS than the \kv's \propts). We then broadcast proposes to remote machines.
+From that point we proceed as we would normally. Specifically, if we can gather a majority of acks from the remote machines, then we can get the local \kv~\acced~but for our RMW. Otherwise, if we must help, then we proceed to help as described above.
+
+\beginbsec{Crucial Take-away}
+It is crucial to remember that a \kv~can never transition from \acced~to \proped~(and remain in the same \logno). It can only transition from \acced~to \acced~with a higher \accts.

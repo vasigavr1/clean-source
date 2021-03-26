@@ -1,0 +1,16 @@
+\section{The back-off mechanism} \label{sec:backoff}
+We saw that if an RMW does not find the \kv~in \invalid~state, it does not grab it. Rather its \locentry~transitions to the \need~state. The \locentry~also stores the RMW that is currently holding the \kv~and its state. 
+
+When the worker inspects the \locentry, if it finds it in \need~state, it attempts to grab the \kv. The \kv~can be grabbed if it's in \invalid~state. 
+When the \kv~cannot be grabbed, the \locentry~notes the details of the \kv, its state, its current \propts~etc. Therefore, when the RMW fails repeatedly to grab the \kv, it takes note of whether the RMW that holds the \kv~has made any progress.
+If nothing has changed since the the last time that the RMW attempted to grab the \kv, then a counter that is stored in the \locentry~is incremented. The counter measures the time in which the \kv~has not changed. When the counter reaches a threshold (pre-determined \eg at compile-time), then the RMW will attempt to steal or help the entry.
+Otherwise, if there is progress since last inspected, then the counter goes to zero.
+
+Essentially, this is a back-off mechanism. Recall that we can have thousands of RMW running concurrently. If a few of them are on the same \kv, then there is no chance of progress.
+Instead, we limit the conflicting RMWs to one per machine, in the worst case. This is because a \kv~can be grabbed by a remote machine.
+
+\custvspace
+
+If the counter reaches the threshold, that typically means that the \kv~is held by a remote machine, which has failed. In this instance, if the \kv~is in \proped~state, an RMW can simply \qt{steal} the \kv, by using a higher \propts. The RMW will trigger propose broadcasts, and will transition its \locentry~to \proped~state, whereby it will wait for propose replies.
+
+However, if the \kv~is in Accepted state, we can \emph{not} steal it. We must help it.

@@ -1,0 +1,129 @@
+\section{System model and data structures} \label{sec:prel}
+
+There are a finite number of machines (aka servers or nodes). Typical numbers are 3 to 7. Each machine runs a number of worker software threads (\emph{workers}). Typical numbers are 20 to 30. Each worker runs a number of sessions. Typically 40 to 80. Each session maps to an external client. There is one FIFO per session. Client requests are inserted in the FIFO.
+Workers execute the requests of each session in order. Requests from different sessions can run concurrently. We will assume that all requests are read-modify-writes (RMWs). 
+
+Therefore, at any given moment the worker can be working concurrently on one RMW for each session.
+With 20 workers, 40 sessions and 5 machines, at any given moment there are 4000 RMWs running concurrently. 
+
+
+Each machine has the same Key-Value Store (KVS) in its main memory.
+For each RMW a Paxos instance is running. RMWs to different \kvs\ do not have any relation whatsoever. RMWs to the same \kv\ are said to \emph{conflict}.
+
+\subsection{Data-structures and preliminaries}~\label{sec:prel:data}
+We start by establishing the data structures that will be used by the implementation.
+
+
+\custvspace
+\beginbsec{Message Types}
+Paxos requires 2 broadcast rounds, a \emph{propose} broadcast followed by an \emph{accept} broadcast. Finally, if the accept is successful, a \emph{commit} message will be broadcast.
+
+
+\subsubsection{The \kv~and its metadata}
+\custvspace
+\beginbsec{\kv}
+For each key in the KVS, the KVS stores a data structure that contains the key, the value and some metadata. We will refer to this structure as \emph{\kv}. The \kv~is where RMWs to the same key from different machines/workers/sessions meet and synchronize. The metadata of the \kv\ will describe the state of the executing RMW (if any) at any given moment as perceived by the machine that stores the \kv.
+
+
+\custvspace
+\beginbsec{\kv~fields}
+Below is a list of all the fields of \kv. The rest of this subsection is devoted to explaining these fields.
+\squishenum
+\item key
+\item value
+\item accepted-value
+\item state
+\item log-no
+\item last-committed-log-no
+\item proposed-TS
+\item accepted-TS
+\item rmw-id
+\item last-committed-rmw-id
+\squishenumend
+
+\custvspace
+Crucially, every piece of metadata is absolutely necessary as we will see throughout this paper.
+
+\custvspace
+\beginbsec{State}
+Each \kv\ stores a \state\ variable. The state can be \invalid, \proped\ or \acced.
+The \state\ variable refers to the last not-yet-committed \logno. 
+\invalid\ means that the \kv~knows of no ongoing RMW attempt. On receiving a propose (locally or from a different machine) the state will go to \proped. On receiving an accept the state will go to \acced. As we explain the protocol we will demonstrate when such state transitions are legal.
+
+\custvspace
+\beginbsec{Logical Timestamps---\emph{TSes}}
+Paxos makes heavy use of logical timestamps (aka Lamport Clocks). A timestamp is a tuple of a version and a machine-id. To compare two timestamps, we compare their versions, using the machine-ids as tie breakers. We will refer to logical timestamps simply as \emph{TSes}.
+
+
+\custvspace
+\beginbsec{\kv~Timestamps}
+As part of the \kv's metadata there are two TSes. A \propts, which remembers the highest propose seen and an \accts, which remembers the highest TS that has been accepted. The \accts\ is used only in one case: when the \kv~is in \acced\ state and a propose with a lower TS than the \accts\ is received.
+
+
+\custvspace
+\beginbsec{Log number - \logno}
+One of \kv's metadata fields is the \logno, which is a counter for the number of \RMWs\ that have committed for that particular \kv. Despite its name, there is no actual log -- or need for one -- in the implementation~\footnote{Interestingly Lamport also observes that there is no need to keep an actual log for a KVS in his original paper~\cite{Lamport:1998}.}. However, it is useful to think of a log for each \kv; for each of the log's slots, Paxos must run to decide the winner that gets to commits its \RMW. 
+
+Therefore, when a \kv\ stores a \lognoeq 10, that means that the key has already been successfully RMWed 9 times (at least), and we are currently working on the tenth. We do not actually keep a log, because we need not remember any of the values committed in slots 1 - 8.  
+The fields: state, \propts, \accts, \accval\ and \rmw, all refer to the \logno, \ie to the log number we are currently working on. If the state is \invalid, these fields are meaningless. 
+The \kv\ also stores a \comlogno, that refers to the most recent \logno\ that has been committed (that it knows of). The \val\ always refers to the value committed in \comlogno.
+
+\custvspace
+\beginbsec{Helping}
+In Paxos it is possible for machine M1 to \qt{help} an \RMW\ of a different machine M2. 
+The help is necessitated by the uncertainty of the asynchronous environment: M1 cannot always know whether M2 has failed or not, and it cannot always know if an \RMW\ is committed or not (because the \RMW\ may have been committed by a majority that M1 cannot reach in its entirety).
+
+\custvspace
+\beginbsec{RMW-ids}
+As a result of helping, it is possible that machine M2 attempts to commit its \RMW, even though machine M1 helped that \RMW\ in the past. Therefore, if we are not careful it may be the case that M1 commits an \RMW\ in \lognoeq 10 and then machine M2 completes the exact same \RMW\ in \lognoeq 11.
+This violates correctness. To ensure that an \RMW\ is committed exactly once, we use \rmws. An \rmw\ is an 8-Byte value, the LSBs of which contain the global-session-id (it could also be a tuple of <id, global-session-id>). Each session in the system has its own global-session-id and thus each \RMW\ is granted a unique \rmw. This allows us to identify different \RMWs.
+
+\custvspace
+\beginbsec{Registering \rmw}
+Each machine keeps the latest \RMW\ that it knows has been committed by each session globally.
+Therefore, with 5 machines, 20 workers, 40 sessions, each machine holds an array with 800 fields. Each field denotes the most recent \rmw\ of every other session. Note that if we know that the \rmw\ <10, 253>, from session 253, has been committed, then it must be that the \RMW\ with \rmw\ <9, 253> has also been committed. Therefore, we need only remember the latest \rmw\ committed by each session. When a worker learns about a committed-id, it immediately \emph{registers} it, i.e. it updates the array with committed \RMWs\ accordingly.
+
+As a result when a machine tries to commit an already committed \RMW, other machines are able to detect it and reply to it that the \RMW\ has already been committed.
+
+\custvspace
+\beginbsec{Necessary \rmws\ in the \kv}
+The \kv~stores: 1) an \rmw, referring to the the \RMW\ currently being worked on the \logno\ and 2) a \comrmw~which refers to the last committed RMW  (in \comlogno).
+
+
+\custvspace
+\beginbsec{Accepted-value}
+In order to facilitate help, we must know the result of the \RMW\ we are helping, this is why the \kv\ has the field \accval, to remember the value that the highest accepted \RMW\ wants to commit.
+The \accval\ field is only valid, if the key is in \acced\ state and it only refers to the \logno. Note that alternatively, we could only be storing the identity of the \RMW\ operation. For example, if the \RMW\ is a Fetch-and-Increment, we can store its opcode instead of the value it creates, and calculate the value on demand (although the value is probably no more than 8 bytes in this scenario). 
+However, this implementation assumes that the most commonly \RMWs\ are Compare-and-Swaps, where remembering the whole identity of the \RMW\ would be twice as expensive as storing its result (it has a compare-value and an exchange-value!).
+
+\subsubsection{Local-entries} \label{sec:base:loc}
+\custvspace
+\beginbsec{Local-entries} Each worker has one \locentry\ pre-allocated for each session.
+The \locentry\ holds all the necessary state for the RMW. It remembers the exact operation the RMW wants to achieve and to which key, whether the RMW has communicated with the local \kv\ or other machines, what types of responses it has received and so on. Note the contrast between a \kv\ and a \locentry: the \kv\ is shared among all worker threads and stores the state of the RMW that is currently in the front stage executing; \locentries\ are thread-local and store the state of every RMW, including that of RMWs that are currently sidelined, in a back-off state waiting to get access to the \kv.
+
+The \locentry\ has a state variable, describing the state of the RMW: the state can be \invalid, \proped, \acced, \need, \retry, \bcast, \bcasthelp\ and \committed. We will discuss these states as we go along. Here is a list of field members of the \locentry.
+\squishenum
+\item \emph{key}
+\item \emph{state}
+\item \accval
+\item \acclogno
+\item \rmw
+\item \emph{back-off-counter}
+\item \helpflag
+\item \helploc
+\squishenumend
+
+\custvspace
+\beginbsec{Unique Identifier -- \emph{lid}}
+When receiving a reply to a message we need to know to which RMW it corresponds. But because the same RMW may have triggered multiple broadcasts of the same type, we tag each broadcast with a unique identifier called \emph{lid}. The \locentry~remembers the lid used for the most recent broadcast (propose or accept). 
+Replies to that broadcast always include the lid. On receiving a reply, the worker searches if there is an active \locentry~with that lid. If not it disregards the message. Otherwise, the worker passes the reply to the \locentry~. As an optimization, we use the least significant bits of the lid, to store the session-id, such that we can immediately locate the  \locentry, a reply refers to, without the need for a (linear) search.
+
+This is not merely a networking implementation detail. A unique identifier is necessary because it allows us to discard replies to older messages, \eg a reply for the same session, same \rmw~and \logno, may refer to an older propose attempt. 
+
+\custvspace
+\beginbsec{Jargon} We will use the term local/locally to refer to the issuing machine of an RMW, or the machine that stores the KVS. For example, an RMW is said to be locally accepted, if it has gotten the \kv~that is stored in the issuing machine's KVS in \acced\ state.
+
+\subsubsection{Execution Model}
+
+The worker operates in a while(true) loop. In every iteration it: 1) polls for remote messages and takes action based on them by altering local state and enqueuing replies, 2) inspects all active \locentries~(i.e. not in \invalid~state), and it takes action based on their state, 3) it sends enqueued messages (either broadcasts or unicasts which are always replies to broadcasts) and 4) probes the client FIFOs to pull requests for sessions that are not blocked.
+Therefore Paxos protocol actions are triggered, only in response to a received message or when inspecting the \locentry~of an RMW.

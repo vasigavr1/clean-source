@@ -1,0 +1,133 @@
+\section{Correctness}\label{sec:cor}
+We have added several extensions to Paxos to make it run repeatedly (\ie across \lognos) for a given key.
+
+It is challenging to argue that the protocol is both  correct and  efficient.
+We will attempt to do this in the following manner. 
+First we will list a few invariants. We will argue (or informally prove) that the protocol  enforces said invariants. We will show how additions to the protocol help in doing that.
+Then, we will link the invariants with high-level correctness requirements: an RMW commits exactly-once, the issuer of an RMW reads the correct value. We will try to provide arguments that the invariants are both sufficient and necessary.
+
+\subsection{Invariants} \label{sec:cor:invs}
+
+\squishlist
+\item If machine M works (proposes or accepts) on \lognox, then it must be that all previous \lognos~have been committed (\emph{inv-1})
+\item If machine M works (proposes or accepts) on \lognox, then it must be that M knows what has been committed in \lognoxmin~(\emph{inv-2})
+\item It can never be that an RMW gets accepted locally for \lognox, if it has already been committed in a \lognoeq Y, where Y < X (\emph{inv-3})
+\squishend
+
+Roughly, we will enforce inv-1 by ensuring that work on \lognox~can start only after \lognoxmin~has been committed.
+Inv-2 and Inv-3 will be enforced by nacking with \loghigh~all proposes and accepts that refer to \lognox~when \lognoxmin~is not known to be committed.
+
+\subsubsection{Inv-1}
+Inv-1 mandates that a machine M can never work on \lognox, unless all smaller \lognos~have been committed. 
+
+This is proved trivially by the following statement. For machine M to work on \lognox, it must be that at some point one machine grabbed its \kv~for \lognox, with an \invalid~\kv~and \comlognoxmin. There is no other way for work to start on \lognox. 
+
+\subsubsection{Inv-2} 
+
+Inv-2 mandates that machine M cannot work (i.e. propose or accept) on \lognox, unless it knows what was committed in \lognoxmin.
+Note that this is subtly different than inv-1, because it mandates that M itself must know what was committed on the immediately previous \logno.
+
+For an RMW to work on a \lognox, it must be that it has grabbed the \kv. There are two cases on how an RMW can grab a \kv.
+
+\custvspace
+\beginbsec{1st case} The RMW grabs the \kv~it found in \invalid~state. The invariant is trivially enforced here: the entry cannot be in \invalid~state, unless it knows that the previous \logno~has been committed.
+
+\custvspace
+\beginbsec{2nd case}
+The second case is that the RMW attempts to steal or help an entry after the back-off timeout expires. However, in the first place, the \kv~can only transition to \proped~or \acced~state iff the immediately previous \logno~is committed, i.e \logno~=~\comlogno~- 1. 
+This is because remote proposes/accepts are nacked with a \loghigh~reply if the previous \logno~than the one they want has not been committed. Same goes for local proposes/accepts.
+
+
+
+\subsubsection{Inv-3}
+
+Inv-3 mandates that it can never be that an RMW gets accepted locally for \lognox, if it has already been committed in a \lognoeq Y, where Y < X (\emph{inv-3}).
+\custvspace
+
+\beginbsec{Proof}
+Assume machine M proposes in \lognoeq Z, an RMW it previously locally accepted in \lognox. 
+Also assume that the RMW get committed in \lognox, because some other machine helps it.
+It suffices to show that M will receive at least one \alreadycom~reply to its propose message.
+
+Firstly, it must be that X < Z - 1, because M, will only attempt to propose on \lognoeq Z if it knows what has been committed in \lognoeq Z -1 (from inv-2), and therefore it has registered the RMW committed in \lognoeq Z-1. 
+Furthermore, we know that the RMW has already been committed -- by help --in \lognox, before M proposes for \lognoeq Z. This is because the \lognoeq Z - 1, can only be committed if the \lognox~is already committed (from inv-1).
+
+Therefore, before M can issue proposes for \lognoeq Z, it must be that a majority of machines have already acked an accept for every \logno~<= Z-1.  
+Because machines only ack accepts, if they have committed the previous log-no (or else the respond with a \loghigh), we can infer that for each RMW committed in \lognos~smaller than Z, there is a majority of machines that have committed the RMW. Therefore, when M issues proposes for for \lognoeq Z, a majority of machines must have committed and registered the same RMW in \lognox~and thus M must received at least one \alreadycom~reply.
+
+
+
+\subsection{Guarantees}
+Let's now see how enforcing the above invariants results into higher-level guarantees.
+Inv-1 is just there to simplify proving inv-2 and inv-3.
+Firstly we will discuss why each of inv-2 and inv-3 are necessary. Then we will see a counter-example of what can happen without them.
+
+\subsubsection{Necessity of inv-2}
+
+Assume we ack accepts, without knowing the previously committed RMW. For example, in a 5-machine deployment, assume machines M1, M2, M3, M4 ack an accept from M5 for \lognoeq 10, but they all have a \comlogno~= 2. This can happen if M5 has committed all the intermediate \lognos. Then assume that M5 dies.
+M1 steals the \kv~to help in \lognoeq 10. But M1 cannot work on \lognoeq 10, because it does not know what has been committed in \lognoeq 9, and therefore, if it fails to help, it will have to do its own RMW, but it wont know what value to use as the previously committed.
+Therefore, M1 has to start from the \comlogno + 1 (\ie 3) and work its way up.
+However, if it sends a propose for \lognoeq 3, everyone else will answer with a \loglow~nack, but they will only include the RMW committed on \lognoeq 2!
+
+\custvspace
+\beginbsec{Alternative solution}
+It is possible, in the above example to work directly on \lognoeq 9, which we know has been committed (from inv-1) and therefore if M1 issues proposes for \lognoeq 9, it should be able to track down the highest accepted-TS, so that it can commit it directly without bothering with accepts. However, the other machines will still respond with \loglow~nacks to a propose for \lognoeq 9 (because they have accepted M5's RMW to \lognoeq 10). So we then should have to take a lot of extra care (a lot of added metadata and complexity) to have the machines remember the last accepted value/ts for both the current \logno~ and the previous one, so that they can answer to proposes for both \lognoeq 10 and 9.
+
+Note this alternative would also violate inv-3, as no machine will know what has been committed in \lognos~3 through 8. So it is possible that it is one of their own RMWs, and they can end up repeating it, breaking exactly-once semantics.
+We could solve this, by having accept messages including a \regedrmw~field that would allow a majority of machines to register committed rmws, even if it has not actually committed them itself. However, that would incur a fixed overhead in all accept messages.
+
+Overall this alternative seems very complicated and with potentially high overhead.
+
+
+
+\subsubsection{Necessity of inv-3}\label{sec:cor:inv3-nec}
+
+\custvspace
+\beginbsec{Exactly-once semantics}
+Inv-3 enforces exactly-once semantics as it ensures that an RMW can never get committed twice in two different logs, by ensuring that it cannot even get accepted.
+
+\custvspace
+\beginbsec{The RMW creates correct value}
+The RMW creates its value when it gets accepted locally.
+For the RMW to create the correct value, it must be that it knows the value committed in the previous log-no. Inv-2 guarantees exactly that.
+
+Note that the additional step, we take to enforce inv-2 was to force the RMW to work on \kv.\comlogno\ instead of on \kv.\logno, when stealing/helping a stuck RMW after a back-off timeout. If we didn't do that then, it would be possible for an RMW to get accepted locally, without knowing the value committed in the previous log. Then, creating an \accval\ based on the current value of \kv~(\ie \kv.value) would be wrong.
+
+
+\custvspace
+\beginbsec{Ensuring that the RMW reads the correct value}
+An RMW that gets retried, may be informed that it has already been committed. 
+However, remote machines cannot be reasonably expected to say in which \logno\ the RMW has been committed or what value is it supposed to read. To do that, we would require unbounded storage.
+Remote machines simply check their registered \rmws\ (bounded storage) and reply back simply that the RMW has been committed.
+
+What value is then a RMW to read, when it learns that it has been committed?
+To solve this we leverage a critical insight: for an RMW to be helped it must be that it got locally accepted. This is because, only accepted RMWs can be helped, and an RMW must get accepted locally before it can be accepted by another machine.
+
+We can then combine the insight with the inv-3 (\ie it can never be that an RMW gets accepted locally for \lognox, if it has already been committed in a \lognoeq Y, where Y < X).
+Assuming that inv-2 is enforced, then it must be that an RMW can always return the \accval\ from its \locentry, which gets calculated every time the RMW is locally accepted. Plainly, if the RMW got locally accepted in \lognox, if it later finds out that it has been committed, then it must be that it has been committed in \lognox, and thus it can read the \locentry's \accval.
+
+
+\subsubsection{Counter-example for the invariants}
+
+Let's look at an example of what bad can happen without the invariants. Assume 5 machines: M1, M2, M3, M4 and M5:
+\squishenum
+\item M1 accepts RMW-1 locally in \lognoeq 1 and then fails to get accept majority
+\item But, M2 helps M1's RMW-1, with an accept from majority of M2, M3, M4.
+\item M2 broadcasts commits for RMW-1
+\item M3 sees the RMW-1 commit and immediately proposes, accepts and commits RMW-3 in \lognoeq 2, with propose and accept majorities of M1, M3, M4
+\item M1 sees the committed RMW-3 and then goes on to the next \lognoeq 3 to retry its RMW-1
+\item M1's propose  for RMW-1 in \lognoeq 3 gets a majority of acks from M1, M4 and M5
+\item M1 accepts locally RMW-1 for \lognoeq 3
+\squishenumend
+
+\custvspace \noindent
+From this point on M1 will either find out that its \RMW\ has already been committed, in which case it will not know what value to read (even if it could remember previous accepted-values in its local-entry, it wouldn't know which one got helped!) or M1 will manage to commit RMW-1 in \lognoeq 3, breaking the exactly-once semantics.
+
+The problem here is created because M4 acks M1's propose. M4 has not received the commit yet from M2 which helped RMW-1, and thus has not registered RMW-1, yet.
+With the \loghigh~nacks to proposes/accepts, M4 can not ack M3's attempt to commit on \lognoeq 2, before it commits and registers the RMW on \lognoeq 1. 
+
+
+
+
+
+

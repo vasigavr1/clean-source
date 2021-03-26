@@ -1,0 +1,28 @@
+\section{Adding Reads}\label{sec:reads}
+
+Using Paxos to perform reads is far from ideal. Paxos delivers exclusive access to a key to one session. This is 1) very costly, as it is fundamentally hard to do and 2) it hinders concurrency. Reads can be fully concurrent and need no coordination with each other. To give you a sense, 
+we can do about 140 million ABD reads per second, in contrast to 27 million CP RMWs. 
+
+Below, we will explain ABD reads (from this point on simply \qt{reads}) with carstamps. 
+
+
+\subsection{Protocol}
+Firstly the reader broadcasts its locally stored carstamp (\logno~plus a \basets).
+The receiver inspects the \basets~and \comlogno~of the \kv~and it sends back one of three possible replies:
+\begin{enumerate}
+    \item \carstamplow: if the incoming carstamp is lower than the locally stored, then the reply includes the locally stored carstamp along with the locally stored value.
+    \item \carstampequal: if the incoming carstamp is equal to the locally stored, then the reply has no payload
+    \item \carstamphigh: if the incoming carstamp is higher to the locally stored, then the reply has no payload
+\end{enumerate}
+
+The reader collects a majority of answers and reads the highest carstamp received.
+If the reader is not certain that a majority of machines store the value that is about to be read, then before reading, it  first broadcasts a commit (as in a Paxos commit) including the carstamp and the value that will be read.
+
+\custvspace
+\beginbsec{Commits and reads}
+Earlier we said that commits are needed so that reads know what is committed.
+What would the alternative be? Could reads simply look at the values that are accepted and read them? After all if a value is accepted by a majority then it is in principle also committed. However, the accepting majority and the majority that replies to a read may not be the exact same. In which case reads will be unable to infer whether a value that is accepted in one of the replies, is indeed accepted by a majority. To solve this problem the reads themselves would have to \qt{help} accepted values by broadcasting accepts. That would complicate the read protocol, because as we know the path from sending accepts to getting a value committed can be pretty complex.
+
+We want to avoid having reads running any part of the Paxos protocol and that's where commit messages are so useful. Notably, reads may be forced to broadcast commits, but commits can only get acked by remote nodes.
+
+

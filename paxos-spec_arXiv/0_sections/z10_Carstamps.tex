@@ -1,0 +1,76 @@
+\section{Adding writes} \label{sec:writes}
+
+In this section, we will discuss the implementation specification of ABD writes using carstamps. %
+
+Writes need not solve consensus; in contrast concurrent writes can execute and be serialized post-hoc deterministicaly in each node using logical timestmaps (\ie TSes). Therefore, writes can fundamentally be implemented more efficiently than RMWs.
+We can do roughly 5.5 million Classic Paxos RMW/s per machine (5 machines).
+All-aboard does roughly 7.5 million and ABD writes reach 12 million.
+
+
+Therefore, there is benefit coupling them together.
+If the client wants 90\% of the time to do simple writes and 10\% of the time to do RMWs, then we can increase performance, by using ABD 90\% of the time. 
+
+To do so, we use a technique called \emph{carstamps} to be able to serialize Paxos RMWs and ABD Writes.  
+Below we dive into how carstamps interact with the Paxos protocol and what are the necessary additions to support them.
+
+\custvspace
+\beginbsec{Basic idea}
+The \kv~will have a \basets. Writes will increase the \basets. RMWs will choose both a \logno~and a \basets. The  \basets\ (which is Lamport clock same as all TSes we have discussed) along with the \logno\ comprise the carstamp. For example imagine key A and machines M1, M2, M3, M4, M5. M1 writes A increasing its \basets~to {1, M1}. M2 performs an RMW on A choosing \lognoeq 1 and \basets~= {1, M1}. M3 writes A before M2 finishes, increasing the \basets~to {2, M3}. M2's RMW precedes M3's writes and as such will only be applied by machines that have not seen M3's write. Assume that M2's RMW fails because M4's RMW wins out. M4 may choose \basets~={2, M3}, and \lognoeq 1.
+
+
+\subsection{Invariants}
+Firstly, we need to make sure that the issuer of an RMW reads the correct value, and the RMW overwrites the same value in all machines, despite getting helped.
+We will achieve that effect in the same spirit as we have done so far.
+When the RMW gets accepted locally, then it selects its \basets. If it is to get committed -- help or not -- it must be that it gets committed with that same \basets. This guarantees, that an RMW always gets committed with the same \basets~in all machines.
+
+Secondly, we need to make sure that the RMW overwrites the most recently committed write.
+Here is why this is slightly harder.
+
+\custvspace
+\beginbsec{Enforcing the Invariants}
+When accepting locally, we choose the value that will be read. If the RMW is committed in that same \logno, then that value is set in stone, \ie~helpers cannot change it.
+For example, imagine that  Machine-1 accepts locally, then it immediately becomes unresponsive and Machine-2 helps it. When Machine-1 becomes responsive again it realizes its RMW has been helped, but it needs to know what value to read. There are two invariants of Paxos that help us then read the correct value: the RMW can only be helped in a \logno~where it accepted locally and the value that was helped was the one accepted locally. Therefore, it is safe to read the locally accepted value. This is described in detail in Section~\ref{sec:cor}.
+
+\custvspace
+Therefore, to ensure the second invariant \ie to maintain linearizability with writes and RMWs, it must be that when accepting locally, the RMW uses a \basets~that is bigger or equal than that of any write that had completed before the RMW was issued.
+I.e. it must never be that a write completed before the RMW began executing, but was not seen by the RMW.
+
+To achieve this we include the \basets, in propose messages, asking other machines if they have seen any more writes. When a remote machine intends to ack the propose (\ie none of the nack conditions are triggered), then it also inspects its \basets; if the propose's \basets~is smaller that what locally stored then the propose is still acked, but the \ack~reply contains the value and its \basets. This allows the proposer to ensure that it will use a \basets~that is at least as big as the biggest write that has completed. Sometimes the propose, will find the ts of writes that have not yet completed. This is okay: if the RMW completes it is as if its base write is also completed (similarly to the second round of an ABD write or read).
+
+\subsection{What about All-aboard}
+
+Unfortunately, All-aboard immediately selects the value that it will overwrite, as it gets immediately accepted locally. This however violated the second invariant that denotes that the RMW must overwrite any completed write. The problem is that there may be completed writes that have not been received locally.  The fix would be to add a broadcast round that reads timestamps similar to what ABD-writes do. However, that seems awfully close to having proposes and thus beats the purpose of All-aboard in the first place. The inverse optimization, Singleton Paxos, where proposes are acked by all instead of accepts, would naturally work with carstamps. As explained, in Section~\ref{sec:all-aboard}, Singleton Paxos is not possible to deploy if all acks cannot always be gathered.
+
+We have not added the first round to All-aboard. %
+
+\subsection{Specification Changes}
+
+\custvspace\beginbsec{Metadata changes}
+\squishlist
+\item The \kv~has a \basets~field, to be used by ABD writes for serialization, but also by RMWs, to serialize with writes.
+\item The \kv~has an \accbasets~field, which is used to return to proposes when sending them \lowacc~replies, along with the \accts~the \accval~and the \rmw~(which is the rmw-id of the last accepted RMW). This will allow helpers, to commit an RMW with the correct \basets.
+\item \loglow~replies include the \basets~of the last committed RMW. Finally this is also useful when receiving commits without any value (see \S\ref{sec:how:commits}), to know which \basets~to commit.
+
+\item The \locentry~needs a \basets~field that specifies the chosen \basets~at local-accept time.
+\squishend
+
+\subsubsection{Protocol changes}
+
+\custvspace\beginbsec{Sending Proposes}
+Proposes now include a \basets~field. 
+
+\custvspace\beginbsec{Proposes replies}
+On sending propose replies we make the following changes
+\squishlist
+\item The \lowacc~reply includes the \accbasets~of the \kv, which is the \basets~of the RMW that may be helped.
+\item The \loglow~replies also include the \basets~of the \kv. 
+\item A new type of ack is introduced: \ackbase~ which is triggered every time  a propose is is received that can be acked but contains a low \basets~compared to the locally stored. The payload of the reply includes a value and a \basets. 
+\squishend
+
+On receiving a propose reply of type \ackbase, the proposer overwrites its locally stored value and its \basets, if the \basets~of the \ackbase~is bigger than the locally stored \basets. 
+
+\custvspace\beginbsec{Optimization} As an optimization, we note on the \locentry~(by raising a flag) that the RMW has looked for a fresh \basets~and therefore subsequent proposes from this propose (because it may get retried), need not inspect the \basets~of remote nodes
+
+\custvspace\beginbsec{Accepts} Accept messages include the \basets. This gets written in the \kv's \accbasets~field. There is no change to accept replies.
+
+\custvspace\beginbsec{Commits} Finally, commits include the \basets~of the RMW to be committed.  Recall on Section~\ref{sec:how:commits}, we discussed an optimization where commits can be broadcast without their value, if the accept has seen \acks~from all machines. Those commits need not include \basets~either. The receiver side has stored the \basets~in its \accbasets~field of the \kv~and will use that. A potential pitfall: if the \kv~is not still in \acced~state, but it has progressed, its \accbasets~should not be used.
