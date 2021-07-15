@@ -1,0 +1,81 @@
+
+% \begin{table}[t]
+% \centering
+% \begin{tabular}{c|c|}
+% \hhline{~-} %hline
+
+% % \begin{tabular}[c]{@{}c@{}} Briefly unavailable\\ (Assuming N = 2f+1 nodes)\end{tabular} 
+% & \multicolumn{1}{|c|}{\colorhl Protocols}
+% \\ \hline
+
+% \multicolumn{1}{|c|}{\colorhl Always available} &
+% \multicolumn{1}{|c|}{\begin{tabular}[c]{@{}c@{}}CP, ABD,\\ All-aboard\end{tabular}}  
+% \\ \hline
+
+% \multicolumn{1}{|c|}{\colorhl 
+% \begin{tabular}[c]{@{}c@{}}
+% Briefly unavailable \\on a leader failure 
+% \end{tabular}} &
+% \multicolumn{1}{|c|}{ZAB, MP} 
+% \\ \hline
+
+% \multicolumn{1}{|c|}{\colorhl 
+% \begin{tabular}[c]{@{}c@{}}
+% Briefly unavailable \\on any node failure 
+% \end{tabular}} &
+% \multicolumn{1}{|c|}{
+% \begin{tabular}[c]{@{}c@{}}
+% Hermes, CRAQ, CHT, \\ CHT-multi-ldr, Derecho
+% \end{tabular}} 
+% \\ \hline
+% \end{tabular}
+% \caption{\y{The conditions under which protocols become unavailable for a duration of a predefined time-out}}
+% \label{tab:avail}
+% \end{table}
+
+
+\begin{table}[t]
+\centering
+\resizebox{0.48\textwidth}{!}{%
+\begin{tabular}{c|c|}
+\hhline{~-} %hline
+
+% \begin{tabular}[c]{@{}c@{}} Briefly unavailable\\ (Assuming N = 2f+1 nodes)\end{tabular} 
+& \multicolumn{1}{|c|}{\colorhl Availability guarantees}
+\\ \hline
+
+ 
+\multicolumn{1}{|c|}{ \colorhl
+\begin{tabular}[c]{@{}c@{}}
+CP, ABD, All-aboard
+\end{tabular}} & 
+
+\multicolumn{1}{|c|}{ Always available}
+\\ \hline
+
+
+\multicolumn{1}{|c|}{ \colorhl ZAB, MP} &
+
+\multicolumn{1}{|c|}{
+\begin{tabular}[c]{@{}c@{}}
+Unavailable for the duration of a \\ predefined time-out after the leader node fails 
+\end{tabular}} 
+\\ \hline
+
+
+\multicolumn{1}{|c|}{ \colorhl
+\begin{tabular}[c]{@{}c@{}}
+Hermes, CRAQ, CHT, \\ CHT-multi-ldr, Derecho
+\end{tabular}} &
+\multicolumn{1}{|c|}{ 
+\begin{tabular}[c]{@{}c@{}}
+Unavailable for the duration of a \\ predefined time-out after any node fails
+\end{tabular}} 
+
+\\ \hline
+\end{tabular}
+}
+\caption{\y{A summary of the availability guarantees of the \pnum\ protocols, with up to $f$ failures (with $2f + 1$ nodes). }}
+\label{tab:avail}
+
+\end{table}

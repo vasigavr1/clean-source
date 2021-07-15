@@ -1,0 +1,1185 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{66}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[\protect\citeauthoryear{Ailijiang, Charapko, and Demirbas}{Ailijiang
+  et~al\mbox{.}}{2019}]%
+        {Ailijiang:2019}
+\bibfield{author}{\bibinfo{person}{Ailidani Ailijiang},
+  \bibinfo{person}{Aleksey Charapko}, {and} \bibinfo{person}{Murat Demirbas}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{{Dissecting the Performance of Strongly-Consistent
+  Replication Protocols}}. In \bibinfo{booktitle}{\emph{Proceedings of the 2019
+  International Conference on Management of Data}} (Amsterdam, Netherlands)
+  \emph{(\bibinfo{series}{SIGMOD '19})}. \bibinfo{publisher}{Association for
+  Computing Machinery}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{1696–1710}.
+\newblock
+\showISBNx{9781450356435}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3299869.3319893}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Ailijiang, Charapko, Demirbas, and
+  Kosar}{Ailijiang et~al\mbox{.}}{2020}]%
+        {Ailijiang:2020}
+\bibfield{author}{\bibinfo{person}{Ailidani Ailijiang},
+  \bibinfo{person}{Aleksey Charapko}, \bibinfo{person}{Murat Demirbas}, {and}
+  \bibinfo{person}{Tevfik Kosar}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{WPaxos: Wide Area Network Flexible Consensus}}.
+\newblock \bibinfo{journal}{\emph{{IEEE} Trans. Parallel Distributed Syst.}}
+  \bibinfo{volume}{31}, \bibinfo{number}{1} (\bibinfo{year}{2020}),
+  \bibinfo{pages}{211--223}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1109/TPDS.2019.2929793}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Alsberg and Day}{Alsberg and Day}{1976}]%
+        {Alsberg:1976}
+\bibfield{author}{\bibinfo{person}{Peter~A. Alsberg} {and}
+  \bibinfo{person}{John~D. Day}.} \bibinfo{year}{1976}\natexlab{}.
+\newblock \showarticletitle{A Principle for Resilient Sharing of Distributed
+  Resources}. In \bibinfo{booktitle}{\emph{Proceedings of the 2Nd International
+  Conference on Software Engineering}} (San Francisco, California, USA)
+  \emph{(\bibinfo{series}{ICSE '76})}. \bibinfo{publisher}{IEEE Computer
+  Society Press}, \bibinfo{address}{Los Alamitos, CA, USA},
+  \bibinfo{pages}{562--570}.
+\newblock
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=800253.807732}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Ardekani, Sutra, and Shapiro}{Ardekani
+  et~al\mbox{.}}{2014}]%
+        {Ardekani:2014b}
+\bibfield{author}{\bibinfo{person}{Masoud~Saeida Ardekani},
+  \bibinfo{person}{Pierre Sutra}, {and} \bibinfo{person}{Marc Shapiro}.}
+  \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{G-DUR: A Middleware for Assembling, Analyzing, and
+  Improving Transactional Protocols}}. In \bibinfo{booktitle}{\emph{Proceedings
+  of the 15th International Middleware Conference}} (Bordeaux, France)
+  \emph{(\bibinfo{series}{Middleware '14})}. \bibinfo{publisher}{Association
+  for Computing Machinery}, \bibinfo{pages}{13–24}.
+\newblock
+\showISBNx{9781450327855}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2663165.2663336}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Attiya and Welch}{Attiya and Welch}{1994}]%
+        {Attiya:1994}
+\bibfield{author}{\bibinfo{person}{Hagit Attiya} {and}
+  \bibinfo{person}{Jennifer~L. Welch}.} \bibinfo{year}{1994}\natexlab{}.
+\newblock \showarticletitle{{Sequential Consistency Versus Linearizability}}.
+\newblock \bibinfo{journal}{\emph{ACM Trans. Comput. Syst.}}
+  \bibinfo{volume}{12}, \bibinfo{number}{2} (\bibinfo{date}{May}
+  \bibinfo{year}{1994}), \bibinfo{pages}{91--122}.
+\newblock
+\showISSN{0734-2071}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/176575.176576}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Barak}{Barak}{2013}]%
+        {Barak:2013}
+\bibfield{author}{\bibinfo{person}{Dotan Barak}.}
+  \bibinfo{year}{2013}\natexlab{}.
+\newblock \bibinfo{title}{{Tips and tricks to optimize your RDMA code}}.
+\newblock
+  \bibinfo{howpublished}{\url{https://www.rdmamojo.com/2013/06/08/tips-and-tricks-to-optimize-your-rdma-code/}}.
+\newblock
+\newblock
+\shownote{(Accessed on 07/08/2019).}
+
+
+\bibitem[\protect\citeauthoryear{Barak}{Barak}{2015}]%
+        {Barak:2015}
+\bibfield{author}{\bibinfo{person}{Dotan Barak}.}
+  \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{{RDMA Aware Networks Programming User Manual}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Barroso, Marty, Patterson, and
+  Ranganathan}{Barroso et~al\mbox{.}}{2017}]%
+        {Barroso:2017}
+\bibfield{author}{\bibinfo{person}{Luiz Barroso}, \bibinfo{person}{Mike Marty},
+  \bibinfo{person}{David Patterson}, {and} \bibinfo{person}{Parthasarathy
+  Ranganathan}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Attack of the Killer Microseconds}.
+\newblock \bibinfo{journal}{\emph{Commun. ACM}} \bibinfo{volume}{60},
+  \bibinfo{number}{4} (\bibinfo{date}{March} \bibinfo{year}{2017}),
+  \bibinfo{pages}{48--54}.
+\newblock
+\showISSN{0001-0782}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3015146}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Burke, Cheng, and Lloyd}{Burke
+  et~al\mbox{.}}{2020}]%
+        {Burke:2020}
+\bibfield{author}{\bibinfo{person}{Matthew Burke}, \bibinfo{person}{Audrey
+  Cheng}, {and} \bibinfo{person}{Wyatt Lloyd}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Gryff: Unifying Consensus and Shared Registers }}.
+  In \bibinfo{booktitle}{\emph{17th {USENIX} Symposium on Networked Systems
+  Design and Implementation ({NSDI} 20)}}. \bibinfo{publisher}{{USENIX}
+  Association}, \bibinfo{address}{Santa Clara, CA}, \bibinfo{pages}{591--617}.
+\newblock
+\showISBNx{978-1-939133-13-7}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi20/presentation/burke}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Chandra, Hadzilacos, and Toueg}{Chandra
+  et~al\mbox{.}}{2016}]%
+        {Chandra:2016}
+\bibfield{author}{\bibinfo{person}{Tushar~D. Chandra}, \bibinfo{person}{Vassos
+  Hadzilacos}, {and} \bibinfo{person}{Sam Toueg}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{An Algorithm for Replicated Objects with Efficient
+  Reads}. In \bibinfo{booktitle}{\emph{Proceedings of the 2016 ACM Symposium on
+  Principles of Distributed Computing}} (Chicago, Illinois, USA)
+  \emph{(\bibinfo{series}{PODC '16})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{325--334}.
+\newblock
+\showISBNx{978-1-4503-3964-3}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2933057.2933111}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Charapko, Ailijiang, and Demirbas}{Charapko
+  et~al\mbox{.}}{2019}]%
+        {Charapko:2019}
+\bibfield{author}{\bibinfo{person}{Aleksey Charapko}, \bibinfo{person}{Ailidani
+  Ailijiang}, {and} \bibinfo{person}{Murat Demirbas}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Linearizable Quorum Reads in Paxos}. In
+  \bibinfo{booktitle}{\emph{11th {USENIX} Workshop on Hot Topics in Storage and
+  File Systems (HotStorage 19)}}. \bibinfo{publisher}{{USENIX} Association},
+  \bibinfo{address}{Renton, WA}.
+\newblock
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/hotstorage19/presentation/charapko}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Cormode and Hadjieleftheriou}{Cormode and
+  Hadjieleftheriou}{2008}]%
+        {Cormode:2008}
+\bibfield{author}{\bibinfo{person}{Graham Cormode} {and}
+  \bibinfo{person}{Marios Hadjieleftheriou}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{{Finding Frequent Items in Data Streams}}.
+\newblock \bibinfo{journal}{\emph{Proc. VLDB Endow.}} \bibinfo{volume}{1},
+  \bibinfo{number}{2} (\bibinfo{date}{Aug.} \bibinfo{year}{2008}),
+  \bibinfo{pages}{1530--1541}.
+\newblock
+\showISSN{2150-8097}
+\urldef\tempurl%
+\url{https://doi.org/10.14778/1454159.1454225}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Dragojevi{\'c}, Narayanan, Castro, and
+  Hodson}{Dragojevi{\'c} et~al\mbox{.}}{2014}]%
+        {Dragojevic:2014}
+\bibfield{author}{\bibinfo{person}{Aleksandar Dragojevi{\'c}},
+  \bibinfo{person}{Dushyanth Narayanan}, \bibinfo{person}{Miguel Castro}, {and}
+  \bibinfo{person}{Orion Hodson}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{FaRM: Fast Remote Memory}}. In
+  \bibinfo{booktitle}{\emph{11th USENIX Symposium on Networked Systems Design
+  and Implementation (NSDI 14)}}. \bibinfo{publisher}{USENIX Association},
+  \bibinfo{address}{Seattle, WA}, \bibinfo{pages}{401--414}.
+\newblock
+\showISBNx{978-1-931971-09-6}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi14/technical-sessions/dragojevi{\'c}}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Enes, Baquero, Rezende, Gotsman, Perrin, and
+  Sutra}{Enes et~al\mbox{.}}{2020}]%
+        {Enes:2020}
+\bibfield{author}{\bibinfo{person}{Vitor Enes}, \bibinfo{person}{Carlos
+  Baquero}, \bibinfo{person}{Tuanir~Fran\c{c}a Rezende},
+  \bibinfo{person}{Alexey Gotsman}, \bibinfo{person}{Matthieu Perrin}, {and}
+  \bibinfo{person}{Pierre Sutra}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{State-Machine Replication for Planet-Scale
+  Systems}. In \bibinfo{booktitle}{\emph{Proceedings of the Fifteenth European
+  Conference on Computer Systems}} (Heraklion, Greece)
+  \emph{(\bibinfo{series}{EuroSys ’20})}. \bibinfo{publisher}{Association for
+  Computing Machinery}, \bibinfo{address}{New York, NY, USA}, Article
+  \bibinfo{articleno}{24}, \bibinfo{numpages}{15}~pages.
+\newblock
+\showISBNx{9781450368827}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3342195.3387543}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{{Faldu}, {Diamond}, and {Grot}}{{Faldu}
+  et~al\mbox{.}}{2020}]%
+        {Priyank:2019}
+\bibfield{author}{\bibinfo{person}{P. {Faldu}}, \bibinfo{person}{J. {Diamond}},
+  {and} \bibinfo{person}{B. {Grot}}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Domain-Specialized Cache Management for Graph
+  Analytics}}. In \bibinfo{booktitle}{\emph{2020 IEEE International Symposium
+  on High Performance Computer Architecture (HPCA)}}.
+  \bibinfo{pages}{234--248}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1109/HPCA47549.2020.00028}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Firestone, Putnam, Mundkur, Chiou, Dabagh,
+  Andrewartha, Angepat, Bhanu, Caulfield, Chung, Chandrappa, Chaturmohta,
+  Humphrey, Lavier, Lam, Liu, Ovtcharov, Padhye, Popuri, Raindel, Sapre, Shaw,
+  Silva, Sivakumar, Srivastava, Verma, Zuhair, Bansal, Burger, Vaid, Maltz, and
+  Greenberg}{Firestone et~al\mbox{.}}{2018}]%
+        {Firestone:2018}
+\bibfield{author}{\bibinfo{person}{Daniel Firestone}, \bibinfo{person}{Andrew
+  Putnam}, \bibinfo{person}{Sambhrama Mundkur}, \bibinfo{person}{Derek Chiou},
+  \bibinfo{person}{Alireza Dabagh}, \bibinfo{person}{Mike Andrewartha},
+  \bibinfo{person}{Hari Angepat}, \bibinfo{person}{Vivek Bhanu},
+  \bibinfo{person}{Adrian Caulfield}, \bibinfo{person}{Eric Chung},
+  \bibinfo{person}{Harish~Kumar Chandrappa}, \bibinfo{person}{Somesh
+  Chaturmohta}, \bibinfo{person}{Matt Humphrey}, \bibinfo{person}{Jack Lavier},
+  \bibinfo{person}{Norman Lam}, \bibinfo{person}{Fengfen Liu},
+  \bibinfo{person}{Kalin Ovtcharov}, \bibinfo{person}{Jitu Padhye},
+  \bibinfo{person}{Gautham Popuri}, \bibinfo{person}{Shachar Raindel},
+  \bibinfo{person}{Tejas Sapre}, \bibinfo{person}{Mark Shaw},
+  \bibinfo{person}{Gabriel Silva}, \bibinfo{person}{Madhan Sivakumar},
+  \bibinfo{person}{Nisheeth Srivastava}, \bibinfo{person}{Anshuman Verma},
+  \bibinfo{person}{Qasim Zuhair}, \bibinfo{person}{Deepak Bansal},
+  \bibinfo{person}{Doug Burger}, \bibinfo{person}{Kushagra Vaid},
+  \bibinfo{person}{David~A. Maltz}, {and} \bibinfo{person}{Albert Greenberg}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Azure Accelerated Networking: SmartNICs in the
+  Public Cloud}. In \bibinfo{booktitle}{\emph{15th {USENIX} Symposium on
+  Networked Systems Design and Implementation ({NSDI} 18)}}.
+  \bibinfo{publisher}{{USENIX} Association}, \bibinfo{address}{Renton, WA},
+  \bibinfo{pages}{51--66}.
+\newblock
+\showISBNx{978-1-931971-43-0}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi18/presentation/firestone}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Fischer, Lynch, and Paterson}{Fischer
+  et~al\mbox{.}}{1985}]%
+        {Fischer:1985}
+\bibfield{author}{\bibinfo{person}{Michael~J. Fischer},
+  \bibinfo{person}{Nancy~A. Lynch}, {and} \bibinfo{person}{Michael~S.
+  Paterson}.} \bibinfo{year}{1985}\natexlab{}.
+\newblock \showarticletitle{{Impossibility of Distributed Consensus with One
+  Faulty Process}}.
+\newblock \bibinfo{journal}{\emph{J. ACM}} \bibinfo{volume}{32},
+  \bibinfo{number}{2} (\bibinfo{date}{April} \bibinfo{year}{1985}),
+  \bibinfo{pages}{374--382}.
+\newblock
+\showISSN{0004-5411}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3149.214121}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Gavrielatos, Katsarakis, Joshi, Oswald, Grot,
+  and Nagarajan}{Gavrielatos et~al\mbox{.}}{2018}]%
+        {A&V:2018}
+\bibfield{author}{\bibinfo{person}{Vasilis Gavrielatos},
+  \bibinfo{person}{Antonios Katsarakis}, \bibinfo{person}{Arpit Joshi},
+  \bibinfo{person}{Nicolai Oswald}, \bibinfo{person}{Boris Grot}, {and}
+  \bibinfo{person}{Vijay Nagarajan}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{Scale-out ccNUMA: Exploiting Skew with Strongly
+  Consistent Caching}}. In \bibinfo{booktitle}{\emph{Proceedings of the
+  Thirteenth EuroSys Conference}} (Porto, Portugal)
+  \emph{(\bibinfo{series}{EuroSys '18})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, Article \bibinfo{articleno}{21},
+  \bibinfo{numpages}{15}~pages.
+\newblock
+\showISBNx{978-1-4503-5584-1}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3190508.3190550}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Gavrielatos, Katsarakis, and
+  Nagarajan}{Gavrielatos et~al\mbox{.}}{2021}]%
+        {Paxos-spec}
+\bibfield{author}{\bibinfo{person}{Vasilis Gavrielatos},
+  \bibinfo{person}{Antonios Katsarakis}, {and} \bibinfo{person}{Vijay
+  Nagarajan}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \bibinfo{title}{Extending Classic Paxos for High-performance
+  Read-Modify-Write Registers}.
+\newblock
+\newblock
+\showeprint[arxiv]{2103.14701}~[cs.DC]
+
+
+\bibitem[\protect\citeauthoryear{Gavrielatos, Katsarakis, Nagarajan, Grot, and
+  Joshi}{Gavrielatos et~al\mbox{.}}{2020}]%
+        {V:2020}
+\bibfield{author}{\bibinfo{person}{Vasilis Gavrielatos},
+  \bibinfo{person}{Antonios Katsarakis}, \bibinfo{person}{Vijay Nagarajan},
+  \bibinfo{person}{Boris Grot}, {and} \bibinfo{person}{Arpit Joshi}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Kite: Efficient and Available Release Consistency
+  for the Datacenter}}. In \bibinfo{booktitle}{\emph{Proceedings of the 25th
+  ACM SIGPLAN Symposium on Principles and Practice of Parallel Programming}}
+  (San Diego, California) \emph{(\bibinfo{series}{PPoPP ’20})}.
+  \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{1–16}.
+\newblock
+\showISBNx{9781450368186}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3332466.3374516}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Herlihy and Shavit}{Herlihy and
+  Shavit}{2008}]%
+        {Herlihy:2008}
+\bibfield{author}{\bibinfo{person}{Maurice Herlihy} {and} \bibinfo{person}{Nir
+  Shavit}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{{The Art of Multiprocessor Programming}}}.
+\newblock \bibinfo{publisher}{Morgan Kaufmann Publishers Inc.},
+  \bibinfo{address}{San Francisco, CA, USA}.
+\newblock
+\showISBNx{0123705916, 9780123705914}
+
+
+\bibitem[\protect\citeauthoryear{Herlihy and Wing}{Herlihy and Wing}{1990}]%
+        {Herlihy:1990}
+\bibfield{author}{\bibinfo{person}{Maurice~P. Herlihy} {and}
+  \bibinfo{person}{Jeannette~M. Wing}.} \bibinfo{year}{1990}\natexlab{}.
+\newblock \showarticletitle{{Linearizability: A Correctness Condition for
+  Concurrent Objects}}.
+\newblock \bibinfo{journal}{\emph{ACM Trans. Program. Lang. Syst.}}
+  \bibinfo{volume}{12}, \bibinfo{number}{3} (\bibinfo{date}{July}
+  \bibinfo{year}{1990}), \bibinfo{pages}{463--492}.
+\newblock
+\showISSN{0164-0925}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/78969.78972}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Howard}{Howard}{2019}]%
+        {Howard:2019}
+\bibfield{author}{\bibinfo{person}{Heidi Howard}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \emph{\bibinfo{title}{{Distributed Consensus Revised}}}.
+\newblock \bibinfo{thesistype}{Ph.D. Dissertation}. \bibinfo{school}{University
+  of Cambridge}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Howard, Malkhi, and Spiegelman}{Howard
+  et~al\mbox{.}}{2016}]%
+        {Howard:2018}
+\bibfield{author}{\bibinfo{person}{Heidi Howard}, \bibinfo{person}{Dahlia
+  Malkhi}, {and} \bibinfo{person}{Alexander Spiegelman}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{{Flexible Paxos: Quorum intersection revisited}}.
+\newblock \bibinfo{journal}{\emph{CoRR}}  \bibinfo{volume}{abs/1608.06696}
+  (\bibinfo{year}{2016}).
+\newblock
+\showeprint[arxiv]{1608.06696}
+\urldef\tempurl%
+\url{http://arxiv.org/abs/1608.06696}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Hunt, Konar, Junqueira, and Reed}{Hunt
+  et~al\mbox{.}}{2010}]%
+        {Hunt:2010}
+\bibfield{author}{\bibinfo{person}{Patrick Hunt}, \bibinfo{person}{Mahadev
+  Konar}, \bibinfo{person}{Flavio~P. Junqueira}, {and}
+  \bibinfo{person}{Benjamin Reed}.} \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{{ZooKeeper: Wait-free Coordination for
+  Internet-scale Systems}}. In \bibinfo{booktitle}{\emph{Proceedings of the
+  2010 USENIX Conference on USENIX Annual Technical Conference}} (Boston, MA)
+  \emph{(\bibinfo{series}{USENIXATC'10})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA}, \bibinfo{pages}{11--11}.
+\newblock
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=1855840.1855851}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Jha, Behrens, Gkountouvas, Milano, Song,
+  Tremel, Renesse, Zink, and Birman}{Jha et~al\mbox{.}}{2019}]%
+        {Jha:2019}
+\bibfield{author}{\bibinfo{person}{Sagar Jha}, \bibinfo{person}{Jonathan
+  Behrens}, \bibinfo{person}{Theo Gkountouvas}, \bibinfo{person}{Matthew
+  Milano}, \bibinfo{person}{Weijia Song}, \bibinfo{person}{Edward Tremel},
+  \bibinfo{person}{Robbert~Van Renesse}, \bibinfo{person}{Sydney Zink}, {and}
+  \bibinfo{person}{Kenneth~P. Birman}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Derecho: Fast State Machine Replication for Cloud
+  Services}.
+\newblock \bibinfo{journal}{\emph{ACM Trans. Comput. Syst.}}
+  \bibinfo{volume}{36}, \bibinfo{number}{2}, Article \bibinfo{articleno}{4}
+  (\bibinfo{date}{April} \bibinfo{year}{2019}), \bibinfo{numpages}{49}~pages.
+\newblock
+\showISSN{0734-2071}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3302258}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Jin, Li, Zhang, Foster, Lee, Soul{\'e}, Kim,
+  and Stoica}{Jin et~al\mbox{.}}{2018}]%
+        {Jin:2018}
+\bibfield{author}{\bibinfo{person}{Xin Jin}, \bibinfo{person}{Xiaozhou Li},
+  \bibinfo{person}{Haoyu Zhang}, \bibinfo{person}{Nate Foster},
+  \bibinfo{person}{Jeongkeun Lee}, \bibinfo{person}{Robert Soul{\'e}},
+  \bibinfo{person}{Changhoon Kim}, {and} \bibinfo{person}{Ion Stoica}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{NetChain: Scale-Free Sub-RTT Coordination}}. In
+  \bibinfo{booktitle}{\emph{15th {USENIX} Symposium on Networked Systems Design
+  and Implementation ({NSDI} 18)}}. \bibinfo{publisher}{{USENIX} Association},
+  \bibinfo{address}{Renton, WA}, \bibinfo{pages}{35--49}.
+\newblock
+\showISBNx{978-1-931971-43-0}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi18/presentation/jin}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Jin, Li, Zhang, Soule, Lee, Foster, Kim, and
+  Stoica}{Jin et~al\mbox{.}}{2017}]%
+        {Jin:2017}
+\bibfield{author}{\bibinfo{person}{Xin Jin}, \bibinfo{person}{Xiaozhou Li},
+  \bibinfo{person}{Haoyu Zhang}, \bibinfo{person}{Robert Soule},
+  \bibinfo{person}{Jeongkeun Lee}, \bibinfo{person}{Nate Foster},
+  \bibinfo{person}{Changhoon Kim}, {and} \bibinfo{person}{Ion Stoica}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{NetCache: Balancing Key-Value Stores with Fast
+  In-Network Caching}}. In \bibinfo{booktitle}{\emph{Proceedings of the 26th
+  ACM Symposium on Operating Systems Principles}} (Shanghai, China)
+  \emph{(\bibinfo{series}{SOSP '17})}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Kalia, Kaminsky, and Andersen}{Kalia
+  et~al\mbox{.}}{2019}]%
+        {Kalia:2019}
+\bibfield{author}{\bibinfo{person}{Anuj Kalia}, \bibinfo{person}{Michael
+  Kaminsky}, {and} \bibinfo{person}{David Andersen}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{{Datacenter RPCs can be General and Fast}}. In
+  \bibinfo{booktitle}{\emph{16th {USENIX} Symposium on Networked Systems Design
+  and Implementation ({NSDI} 19)}}. \bibinfo{publisher}{{USENIX} Association},
+  \bibinfo{address}{Boston, MA}, \bibinfo{pages}{1--16}.
+\newblock
+\showISBNx{978-1-931971-49-2}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi19/presentation/kalia}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Kalia, Kaminsky, and Andersen}{Kalia
+  et~al\mbox{.}}{2016a}]%
+        {Kalia:2016}
+\bibfield{author}{\bibinfo{person}{Anuj Kalia}, \bibinfo{person}{Michael
+  Kaminsky}, {and} \bibinfo{person}{David~G. Andersen}.}
+  \bibinfo{year}{2016}\natexlab{a}.
+\newblock \showarticletitle{{Design Guidelines for High Performance RDMA
+  Systems}}. In \bibinfo{booktitle}{\emph{Proceedings of the 2016 USENIX
+  Conference on Usenix Annual Technical Conference}} (Denver, CO, USA)
+  \emph{(\bibinfo{series}{USENIX ATC '16})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA},
+  \bibinfo{pages}{437--450}.
+\newblock
+\showISBNx{978-1-931971-30-0}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=3026959.3027000}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Kalia, Kaminsky, and Andersen}{Kalia
+  et~al\mbox{.}}{2016b}]%
+        {F-Kalia:2016}
+\bibfield{author}{\bibinfo{person}{Anuj Kalia}, \bibinfo{person}{Michael
+  Kaminsky}, {and} \bibinfo{person}{David~G. Andersen}.}
+  \bibinfo{year}{2016}\natexlab{b}.
+\newblock \showarticletitle{{FaSST: Fast, Scalable and Simple Distributed
+  Transactions with Two-sided (RDMA) Datagram RPCs}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 12th USENIX Conference on
+  Operating Systems Design and Implementation}} (Savannah, GA, USA)
+  \emph{(\bibinfo{series}{OSDI'16})}. \bibinfo{publisher}{USENIX Association},
+  \bibinfo{address}{Berkeley, CA, USA}, \bibinfo{pages}{185--201}.
+\newblock
+\showISBNx{978-1-931971-33-1}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=3026877.3026892}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{{Kalia, Anuj and Kaminsky, Michael and
+  Andersen, David G.}}{{Kalia, Anuj and Kaminsky, Michael and Andersen, David
+  G.}}{2014}]%
+        {Kalia:2014}
+\bibfield{author}{\bibinfo{person}{{Kalia, Anuj and Kaminsky, Michael and
+  Andersen, David G.}}} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{Using RDMA Efficiently for Key-value Services}}.
+\newblock \bibinfo{journal}{\emph{SIGCOMM Comput. Commun. Rev.}}
+  \bibinfo{volume}{44}, \bibinfo{number}{4} (\bibinfo{date}{Aug.}
+  \bibinfo{year}{2014}), \bibinfo{pages}{295--306}.
+\newblock
+\showISSN{0146-4833}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2740070.2626299}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Katsarakis, Gavrielatos, Katebzadeh, Joshi,
+  Dragojevic, Grot, and Nagarajan}{Katsarakis et~al\mbox{.}}{2020}]%
+        {A:2020}
+\bibfield{author}{\bibinfo{person}{Antonios Katsarakis},
+  \bibinfo{person}{Vasilis Gavrielatos}, \bibinfo{person}{M.R.~Siavash
+  Katebzadeh}, \bibinfo{person}{Arpit Joshi}, \bibinfo{person}{Aleksandar
+  Dragojevic}, \bibinfo{person}{Boris Grot}, {and} \bibinfo{person}{Vijay
+  Nagarajan}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Hermes: A Fast, Fault-Tolerant and Linearizable
+  Replication Protocol}}. In \bibinfo{booktitle}{\emph{Proceedings of the
+  Twenty-Fifth International Conference on Architectural Support for
+  Programming Languages and Operating Systems}} (Lausanne, Switzerland)
+  \emph{(\bibinfo{series}{ASPLOS ’20})}. \bibinfo{publisher}{Association for
+  Computing Machinery}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{201–217}.
+\newblock
+\showISBNx{9781450371025}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3373376.3378496}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Lameter}{Lameter}{2005}]%
+        {Lameter:2005}
+\bibfield{author}{\bibinfo{person}{Christoph Lameter}.}
+  \bibinfo{year}{2005}\natexlab{}.
+\newblock \showarticletitle{{Effective synchronization on Linux/NUMA systems}}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Lamport}{Lamport}{1979}]%
+        {Lamport:1979}
+\bibfield{author}{\bibinfo{person}{L. Lamport}.}
+  \bibinfo{year}{1979}\natexlab{}.
+\newblock \showarticletitle{How to Make a Multiprocessor Computer That
+  Correctly Executes Multiprocess Programs}.
+\newblock \bibinfo{journal}{\emph{IEEE Trans. Comput.}} \bibinfo{volume}{C-28},
+  \bibinfo{number}{9} (\bibinfo{date}{Sept} \bibinfo{year}{1979}),
+  \bibinfo{pages}{690--691}.
+\newblock
+\showISSN{0018-9340}
+\urldef\tempurl%
+\url{https://doi.org/10.1109/TC.1979.1675439}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Lamport}{Lamport}{1998}]%
+        {Lamport:1998}
+\bibfield{author}{\bibinfo{person}{Leslie Lamport}.}
+  \bibinfo{year}{1998}\natexlab{}.
+\newblock \showarticletitle{The part-time parliament}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Computer Systems (TOCS)}}
+  \bibinfo{volume}{16}, \bibinfo{number}{2} (\bibinfo{year}{1998}),
+  \bibinfo{pages}{133--169}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Lamport}{Lamport}{2005}]%
+        {Lamport:2005}
+\bibfield{author}{\bibinfo{person}{Leslie Lamport}.}
+  \bibinfo{year}{2005}\natexlab{}.
+\newblock \showarticletitle{{Generalized consensus and Paxos}}.
+\newblock  (\bibinfo{year}{2005}).
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Lamport}{Lamport}{2006}]%
+        {Lamport:2006}
+\bibfield{author}{\bibinfo{person}{Leslie Lamport}.}
+  \bibinfo{year}{2006}\natexlab{}.
+\newblock \showarticletitle{Fast Paxos}.
+\newblock \bibinfo{journal}{\emph{Distributed Computing}} \bibinfo{volume}{19},
+  \bibinfo{number}{2} (\bibinfo{date}{01 Oct} \bibinfo{year}{2006}),
+  \bibinfo{pages}{79--103}.
+\newblock
+\showISSN{1432-0452}
+\urldef\tempurl%
+\url{https://doi.org/10.1007/s00446-006-0005-x}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Lamport et~al\mbox{.}}{Lamport
+  et~al\mbox{.}}{2001}]%
+        {Lamport:2001}
+\bibfield{author}{\bibinfo{person}{Leslie Lamport} {et~al\mbox{.}}}
+  \bibinfo{year}{2001}\natexlab{}.
+\newblock \showarticletitle{Paxos made simple}.
+\newblock \bibinfo{journal}{\emph{ACM Sigact News}} \bibinfo{volume}{32},
+  \bibinfo{number}{4} (\bibinfo{year}{2001}), \bibinfo{pages}{18--25}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Lev-Ari, Bortnikov, Keidar, and
+  Shraer}{Lev-Ari et~al\mbox{.}}{2017}]%
+        {LevAri:2017}
+\bibfield{author}{\bibinfo{person}{Kfir Lev-Ari}, \bibinfo{person}{Edward
+  Bortnikov}, \bibinfo{person}{Idit Keidar}, {and} \bibinfo{person}{Alexander
+  Shraer}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{Composing Ordered Sequential Consistency}}.
+\newblock \bibinfo{journal}{\emph{Inf. Process. Lett.}} \bibinfo{volume}{123},
+  \bibinfo{number}{C} (\bibinfo{date}{July} \bibinfo{year}{2017}),
+  \bibinfo{pages}{47–50}.
+\newblock
+\showISSN{0020-0190}
+\urldef\tempurl%
+\url{https://doi.org/10.1016/j.ipl.2017.03.004}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Li, Ruan, Xiao, Lu, Xiong, Putnam, Chen, and
+  Zhang}{Li et~al\mbox{.}}{2017}]%
+        {Li:2017}
+\bibfield{author}{\bibinfo{person}{Bojie Li}, \bibinfo{person}{Zhenyuan Ruan},
+  \bibinfo{person}{Wencong Xiao}, \bibinfo{person}{Yuanwei Lu},
+  \bibinfo{person}{Yongqiang Xiong}, \bibinfo{person}{Andrew Putnam},
+  \bibinfo{person}{Enhong Chen}, {and} \bibinfo{person}{Lintao Zhang}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{KV-Direct: High-Performance In-Memory Key-Value
+  Store with Programmable NIC}}. In \bibinfo{booktitle}{\emph{Proceedings of
+  the 26th Symposium on Operating Systems Principles}} (Shanghai, China)
+  \emph{(\bibinfo{series}{SOSP '17})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{137--152}.
+\newblock
+\showISBNx{978-1-4503-5085-3}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3132747.3132756}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Li, Michael, Sharma, Szekeres, and Ports}{Li
+  et~al\mbox{.}}{2016b}]%
+        {Li:2016-NoPaxos}
+\bibfield{author}{\bibinfo{person}{Jialin Li}, \bibinfo{person}{Ellis Michael},
+  \bibinfo{person}{Naveen~Kr. Sharma}, \bibinfo{person}{Adriana Szekeres},
+  {and} \bibinfo{person}{Dan R.~K. Ports}.} \bibinfo{year}{2016}\natexlab{b}.
+\newblock \showarticletitle{{Just Say No to Paxos Overhead: Replacing Consensus
+  with Network Ordering}}. In \bibinfo{booktitle}{\emph{Proceedings of the 12th
+  USENIX Conference on Operating Systems Design and Implementation}} (Savannah,
+  GA, USA) \emph{(\bibinfo{series}{OSDI'16})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA},
+  \bibinfo{pages}{467--483}.
+\newblock
+\showISBNx{978-1-931971-33-1}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=3026877.3026914}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Li, Nelson, Michael, Jin, and Ports}{Li
+  et~al\mbox{.}}{2020}]%
+        {L1:2020}
+\bibfield{author}{\bibinfo{person}{Jialin Li}, \bibinfo{person}{Jacob Nelson},
+  \bibinfo{person}{Ellis Michael}, \bibinfo{person}{Xin Jin}, {and}
+  \bibinfo{person}{Dan R.~K. Ports}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Pegasus: Tolerating Skewed Workloads in
+  Distributed Storage with In-Network Coherence Directories}}. In
+  \bibinfo{booktitle}{\emph{14th {USENIX} Symposium on Operating Systems Design
+  and Implementation ({OSDI} 20)}}. \bibinfo{publisher}{{USENIX} Association},
+  \bibinfo{pages}{387--406}.
+\newblock
+\showISBNx{978-1-939133-19-9}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/osdi20/presentation/li-jialin}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Li, Lim, Lee, Ahn, Kalia, Kaminsky, Andersen,
+  O, Lee, and Dubey}{Li et~al\mbox{.}}{2016a}]%
+        {Li:2016}
+\bibfield{author}{\bibinfo{person}{Sheng Li}, \bibinfo{person}{Hyeontaek Lim},
+  \bibinfo{person}{Victor~W. Lee}, \bibinfo{person}{Jung~Ho Ahn},
+  \bibinfo{person}{Anuj Kalia}, \bibinfo{person}{Michael Kaminsky},
+  \bibinfo{person}{David~G. Andersen}, \bibinfo{person}{Seongil O},
+  \bibinfo{person}{Sukhan Lee}, {and} \bibinfo{person}{Pradeep Dubey}.}
+  \bibinfo{year}{2016}\natexlab{a}.
+\newblock \showarticletitle{{Full-Stack Architecting to Achieve a
+  Billion-Requests-Per-Second Throughput on a Single Key-Value Store Server
+  Platform}}.
+\newblock \bibinfo{journal}{\emph{ACM Trans. Comput. Syst.}}
+  \bibinfo{volume}{34}, \bibinfo{number}{2}, Article \bibinfo{articleno}{5}
+  (\bibinfo{date}{April} \bibinfo{year}{2016}), \bibinfo{numpages}{30}~pages.
+\newblock
+\showISSN{0734-2071}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2897393}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Li, Sethi, Kaminsky, Andersen, and
+  Freedman}{Li et~al\mbox{.}}{2016c}]%
+        {S-Li:2016}
+\bibfield{author}{\bibinfo{person}{Xiaozhou Li}, \bibinfo{person}{Raghav
+  Sethi}, \bibinfo{person}{Michael Kaminsky}, \bibinfo{person}{David~G.
+  Andersen}, {and} \bibinfo{person}{Michael~J. Freedman}.}
+  \bibinfo{year}{2016}\natexlab{c}.
+\newblock \showarticletitle{{Be Fast, Cheap and in Control with SwitchKV}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 13th Usenix Conference on
+  Networked Systems Design and Implementation}} (Santa Clara, CA)
+  \emph{(\bibinfo{series}{NSDI'16})}. \bibinfo{publisher}{USENIX Association},
+  \bibinfo{address}{Berkeley, CA, USA}, \bibinfo{pages}{31--44}.
+\newblock
+\showISBNx{978-1-931971-29-4}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=2930611.2930614}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Lim, Han, Andersen, and Kaminsky}{Lim
+  et~al\mbox{.}}{2014}]%
+        {Lim:2014}
+\bibfield{author}{\bibinfo{person}{Hyeontaek Lim}, \bibinfo{person}{Dongsu
+  Han}, \bibinfo{person}{David~G. Andersen}, {and} \bibinfo{person}{Michael
+  Kaminsky}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{MICA: A Holistic Approach to Fast In-memory
+  Key-value Storage}}. In \bibinfo{booktitle}{\emph{Proceedings of the 11th
+  USENIX Conference on Networked Systems Design and Implementation}} (Seattle,
+  WA) \emph{(\bibinfo{series}{NSDI'14})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA},
+  \bibinfo{pages}{429--444}.
+\newblock
+\showISBNx{978-1-931971-09-6}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=2616448.2616488}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Liu, Krishnamurthy, Madhyastha, Bhardwaj,
+  Gupta, Kamat, Yuan, Jaltade, Liao, Konka, and Jawahar}{Liu
+  et~al\mbox{.}}{2020}]%
+        {Liu:2020}
+\bibfield{author}{\bibinfo{person}{Ming Liu}, \bibinfo{person}{Arvind
+  Krishnamurthy}, \bibinfo{person}{Harsha~V. Madhyastha},
+  \bibinfo{person}{Rishi Bhardwaj}, \bibinfo{person}{Karan Gupta},
+  \bibinfo{person}{Chinmay Kamat}, \bibinfo{person}{Huapeng Yuan},
+  \bibinfo{person}{Aditya Jaltade}, \bibinfo{person}{Roger Liao},
+  \bibinfo{person}{Pavan Konka}, {and} \bibinfo{person}{Anoop Jawahar}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Fine-Grained Replicated State Machines for a
+  Cluster Storage System }}. In \bibinfo{booktitle}{\emph{17th {USENIX}
+  Symposium on Networked Systems Design and Implementation ({NSDI} 20)}}.
+  \bibinfo{publisher}{{USENIX} Association}, \bibinfo{address}{Santa Clara,
+  CA}, \bibinfo{pages}{305--323}.
+\newblock
+\showISBNx{978-1-939133-13-7}
+\urldef\tempurl%
+\url{https://www.usenix.org/conference/nsdi20/presentation/liu-ming}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Lynch and Shvartsman}{Lynch and
+  Shvartsman}{1997}]%
+        {Lynch:1997}
+\bibfield{author}{\bibinfo{person}{N.~A. Lynch} {and} \bibinfo{person}{A.~A.
+  Shvartsman}.} \bibinfo{year}{1997}\natexlab{}.
+\newblock \showarticletitle{Robust emulation of shared memory using dynamic
+  quorum-acknowledged broadcasts}. In \bibinfo{booktitle}{\emph{Proceedings of
+  IEEE 27th International Symposium on Fault Tolerant Computing}}.
+  \bibinfo{pages}{272--281}.
+\newblock
+\showISSN{0731-3071}
+\urldef\tempurl%
+\url{https://doi.org/10.1109/FTCS.1997.614100}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Mao, Junqueira, and Marzullo}{Mao
+  et~al\mbox{.}}{2008}]%
+        {Mao:2008}
+\bibfield{author}{\bibinfo{person}{Yanhua Mao}, \bibinfo{person}{Flavio~P.
+  Junqueira}, {and} \bibinfo{person}{Keith Marzullo}.}
+  \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{{Mencius: Building Efficient Replicated State
+  Machines for WANs}}. In \bibinfo{booktitle}{\emph{Proceedings of the 8th
+  USENIX Conference on Operating Systems Design and Implementation}} (San
+  Diego, California) \emph{(\bibinfo{series}{OSDI'08})}.
+  \bibinfo{publisher}{USENIX Association}, \bibinfo{address}{Berkeley, CA,
+  USA}, \bibinfo{pages}{369--384}.
+\newblock
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=1855741.1855767}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Metwally, Agrawal, and El~Abbadi}{Metwally
+  et~al\mbox{.}}{2005}]%
+        {Metwally:2005}
+\bibfield{author}{\bibinfo{person}{Ahmed Metwally}, \bibinfo{person}{Divyakant
+  Agrawal}, {and} \bibinfo{person}{Amr El~Abbadi}.}
+  \bibinfo{year}{2005}\natexlab{}.
+\newblock \showarticletitle{{Efficient Computation of Frequent and Top-k
+  Elements in Data Streams}}. In \bibinfo{booktitle}{\emph{Proceedings of the
+  10th International Conference on Database Theory}} (Edinburgh, UK)
+  \emph{(\bibinfo{series}{ICDT'05})}. \bibinfo{publisher}{Springer-Verlag},
+  \bibinfo{address}{Berlin, Heidelberg}, \bibinfo{pages}{398--412}.
+\newblock
+\showISBNx{3-540-24288-0, 978-3-540-24288-8}
+\urldef\tempurl%
+\url{https://doi.org/10.1007/978-3-540-30570-5_27}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Moraru, Andersen, and Kaminsky}{Moraru
+  et~al\mbox{.}}{2013}]%
+        {Moraru:2013}
+\bibfield{author}{\bibinfo{person}{Iulian Moraru}, \bibinfo{person}{David~G.
+  Andersen}, {and} \bibinfo{person}{Michael Kaminsky}.}
+  \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{{There is More Consensus in Egalitarian
+  Parliaments}}. In \bibinfo{booktitle}{\emph{Proceedings of the Twenty-Fourth
+  ACM Symposium on Operating Systems Principles}} (Farminton, Pennsylvania)
+  \emph{(\bibinfo{series}{SOSP '13})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{358--372}.
+\newblock
+\showISBNx{978-1-4503-2388-8}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2517349.2517350}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Novakovic, Daglis, Bugnion, Falsafi, and
+  Grot}{Novakovic et~al\mbox{.}}{2016}]%
+        {Novakovic:2016}
+\bibfield{author}{\bibinfo{person}{Stanko Novakovic},
+  \bibinfo{person}{Alexandros Daglis}, \bibinfo{person}{Edouard Bugnion},
+  \bibinfo{person}{Babak Falsafi}, {and} \bibinfo{person}{Boris Grot}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{{An Analysis of Load Imbalance in Scale-out Data
+  Serving}}.
+\newblock \bibinfo{journal}{\emph{SIGMETRICS Perform. Eval. Rev.}}
+  \bibinfo{volume}{44}, \bibinfo{number}{1} (\bibinfo{date}{June}
+  \bibinfo{year}{2016}), \bibinfo{pages}{367--368}.
+\newblock
+\showISSN{0163-5999}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2964791.2901501}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Oki and Liskov}{Oki and Liskov}{1988}]%
+        {Oki:1988}
+\bibfield{author}{\bibinfo{person}{Brian~M. Oki} {and}
+  \bibinfo{person}{Barbara~H. Liskov}.} \bibinfo{year}{1988}\natexlab{}.
+\newblock \showarticletitle{Viewstamped Replication: A New Primary Copy Method
+  to Support Highly-Available Distributed Systems}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the Seventh Annual ACM Symposium on
+  Principles of Distributed Computing}} (Toronto, Ontario, Canada)
+  \emph{(\bibinfo{series}{PODC '88})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{8--17}.
+\newblock
+\showISBNx{0-89791-277-2}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/62546.62549}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Ongaro and Ousterhout}{Ongaro and
+  Ousterhout}{2014}]%
+        {Ongaro:2014}
+\bibfield{author}{\bibinfo{person}{Diego Ongaro} {and} \bibinfo{person}{John
+  Ousterhout}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{In Search of an Understandable Consensus
+  Algorithm}}. In \bibinfo{booktitle}{\emph{Proceedings of the 2014 USENIX
+  Conference on USENIX Annual Technical Conference}} (Philadelphia, PA)
+  \emph{(\bibinfo{series}{USENIX ATC'14})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA},
+  \bibinfo{pages}{305--320}.
+\newblock
+\showISBNx{978-1-931971-10-2}
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=2643634.2643666}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Poke and Hoefler}{Poke and Hoefler}{2015}]%
+        {Poke:2015}
+\bibfield{author}{\bibinfo{person}{Marius Poke} {and} \bibinfo{person}{Torsten
+  Hoefler}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{{DARE: High-Performance State Machine Replication
+  on RDMA Networks}}. In \bibinfo{booktitle}{\emph{Proceedings of the 24th
+  International Symposium on High-Performance Parallel and Distributed
+  Computing}} (Portland, Oregon, USA) \emph{(\bibinfo{series}{HPDC '15})}.
+  \bibinfo{publisher}{ACM}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{107--118}.
+\newblock
+\showISBNx{978-1-4503-3550-8}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/2749246.2749267}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Poke, Hoefler, and Glass}{Poke
+  et~al\mbox{.}}{2017}]%
+        {Poke:2017}
+\bibfield{author}{\bibinfo{person}{Marius Poke}, \bibinfo{person}{Torsten
+  Hoefler}, {and} \bibinfo{person}{Colin~W. Glass}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{AllConcur: Leaderless Concurrent Atomic
+  Broadcast}}. In \bibinfo{booktitle}{\emph{Proceedings of the 26th
+  International Symposium on High-Performance Parallel and Distributed
+  Computing}} (Washington, DC, USA) \emph{(\bibinfo{series}{HPDC '17})}.
+  \bibinfo{publisher}{ACM}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{205--218}.
+\newblock
+\showISBNx{978-1-4503-4699-3}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3078597.3078598}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Reed and Junqueira}{Reed and
+  Junqueira}{2008}]%
+        {Reed:2008}
+\bibfield{author}{\bibinfo{person}{Benjamin Reed} {and}
+  \bibinfo{person}{Flavio~P. Junqueira}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{{A Simple Totally Ordered Broadcast Protocol}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 2Nd Workshop on Large-Scale
+  Distributed Systems and Middleware}} (Yorktown Heights, New York, USA)
+  \emph{(\bibinfo{series}{LADIS '08})}. \bibinfo{publisher}{ACM},
+  \bibinfo{address}{New York, NY, USA}, Article \bibinfo{articleno}{2},
+  \bibinfo{numpages}{6}~pages.
+\newblock
+\showISBNx{978-1-60558-296-2}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/1529974.1529978}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Rystsov}{Rystsov}{2018}]%
+        {Rystsov:2018}
+\bibfield{author}{\bibinfo{person}{Denis Rystsov}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \bibinfo{title}{{CASPaxos: Replicated State Machines without logs}}.
+\newblock
+\newblock
+\showeprint[arxiv]{1802.07000}~[cs.DC]
+\urldef\tempurl%
+\url{https://arxiv.org/abs/1802.07000}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Skrzypczak, Schintke, and Schutt}{Skrzypczak
+  et~al\mbox{.}}{2020}]%
+        {Skrzypczak:2020}
+\bibfield{author}{\bibinfo{person}{Jan Skrzypczak}, \bibinfo{person}{Florian
+  Schintke}, {and} \bibinfo{person}{Thorsten Schutt}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{RMWPaxos: Fault-Tolerant In-Place Consensus
+  Sequences}}.
+\newblock \bibinfo{journal}{\emph{IEEE Transactions on Parallel and Distributed
+  Systems}} \bibinfo{volume}{31}, \bibinfo{number}{10} (\bibinfo{date}{Oct}
+  \bibinfo{year}{2020}), \bibinfo{pages}{2392–2405}.
+\newblock
+\showISSN{2161-9883}
+\urldef\tempurl%
+\url{https://doi.org/10.1109/tpds.2020.2981891}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Szekeres, Whittaker, Li, Sharma,
+  Krishnamurthy, Ports, and Zhang}{Szekeres et~al\mbox{.}}{2020}]%
+        {Szekeres:2020}
+\bibfield{author}{\bibinfo{person}{Adriana Szekeres}, \bibinfo{person}{Michael
+  Whittaker}, \bibinfo{person}{Jialin Li}, \bibinfo{person}{Naveen~Kr. Sharma},
+  \bibinfo{person}{Arvind Krishnamurthy}, \bibinfo{person}{Dan R.~K. Ports},
+  {and} \bibinfo{person}{Irene Zhang}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{Meerkat: Multicore-Scalable Replicated
+  Transactions Following the Zero-Coordination Principle}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the Fifteenth European Conference on
+  Computer Systems}} (Heraklion, Greece) \emph{(\bibinfo{series}{EuroSys
+  '20})}. \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, Article \bibinfo{articleno}{17},
+  \bibinfo{numpages}{14}~pages.
+\newblock
+\showISBNx{9781450368827}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3342195.3387529}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Technologies}{Technologies}{2020}]%
+        {Mellanox:2020}
+\bibfield{author}{\bibinfo{person}{Mellanox Technologies}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \bibinfo{title}{Understanding mlx5 Linux Counters and Status
+  Parameters}.
+\newblock
+\newblock
+\urldef\tempurl%
+\url{http://tiny.cc/7kcysz}
+\showURL{%
+\tempurl}
+\newblock
+\shownote{Accessed: 30 /09/2020.}
+
+
+\bibitem[\protect\citeauthoryear{Terrace and Freedman}{Terrace and
+  Freedman}{2009}]%
+        {Terrace:2009}
+\bibfield{author}{\bibinfo{person}{Jeff Terrace} {and}
+  \bibinfo{person}{Michael~J. Freedman}.} \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{{Object Storage on CRAQ: High-throughput Chain
+  Replication for Read-mostly Workloads}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 2009 Conference on USENIX Annual
+  Technical Conference}} (San Diego, California)
+  \emph{(\bibinfo{series}{USENIX'09})}. \bibinfo{publisher}{USENIX
+  Association}, \bibinfo{address}{Berkeley, CA, USA}, \bibinfo{pages}{11--11}.
+\newblock
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=1855807.1855818}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{van Renesse and Schneider}{van Renesse and
+  Schneider}{2004}]%
+        {VanRenesse:2004}
+\bibfield{author}{\bibinfo{person}{Robbert van Renesse} {and}
+  \bibinfo{person}{Fred~B. Schneider}.} \bibinfo{year}{2004}\natexlab{}.
+\newblock \showarticletitle{{Chain Replication for Supporting High Throughput
+  and Availability}}. In \bibinfo{booktitle}{\emph{Proceedings of the 6th
+  Conference on Symposium on Opearting Systems Design \& Implementation -
+  Volume 6}} (San Francisco, CA) \emph{(\bibinfo{series}{OSDI'04})}.
+  \bibinfo{publisher}{USENIX Association}, \bibinfo{address}{Berkeley, CA,
+  USA}, \bibinfo{pages}{7--7}.
+\newblock
+\urldef\tempurl%
+\url{http://dl.acm.org/citation.cfm?id=1251254.1251261}
+\showURL{%
+\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Vogels}{Vogels}{2009}]%
+        {Vogels:2009}
+\bibfield{author}{\bibinfo{person}{Werner Vogels}.}
+  \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{{Eventually Consistent}}.
+\newblock \bibinfo{journal}{\emph{Commun. ACM}} \bibinfo{volume}{52},
+  \bibinfo{number}{1} (\bibinfo{date}{Jan.} \bibinfo{year}{2009}),
+  \bibinfo{pages}{40--44}.
+\newblock
+\showISSN{0001-0782}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/1435417.1435432}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Wang, Jiang, Chen, Yi, and Cui}{Wang
+  et~al\mbox{.}}{2017}]%
+        {Wang:2017}
+\bibfield{author}{\bibinfo{person}{Cheng Wang}, \bibinfo{person}{Jianyu Jiang},
+  \bibinfo{person}{Xusheng Chen}, \bibinfo{person}{Ning Yi}, {and}
+  \bibinfo{person}{Heming Cui}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{APUS: Fast and Scalable Paxos on RDMA}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 2017 Symposium on Cloud
+  Computing}} (Santa Clara, California) \emph{(\bibinfo{series}{SoCC '17})}.
+  \bibinfo{publisher}{ACM}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{94--107}.
+\newblock
+\showISBNx{978-1-4503-5028-0}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3127479.3128609}
+\showDOI{\tempurl}
+
+
+\bibitem[\protect\citeauthoryear{Zhu, Bai, Li, Michael, Ports, Stoica, and
+  Jin}{Zhu et~al\mbox{.}}{2019}]%
+        {Zhu:2019}
+\bibfield{author}{\bibinfo{person}{Hang Zhu}, \bibinfo{person}{Zhihao Bai},
+  \bibinfo{person}{Jialin Li}, \bibinfo{person}{Ellis Michael},
+  \bibinfo{person}{Dan R.~K. Ports}, \bibinfo{person}{Ion Stoica}, {and}
+  \bibinfo{person}{Xin Jin}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{{Harmonia: Near-Linear Scalability for Replicated
+  Storage with in-Network Conflict Detection}}.
+\newblock \bibinfo{journal}{\emph{Proc. VLDB Endow.}} \bibinfo{volume}{13},
+  \bibinfo{number}{3} (\bibinfo{date}{Nov.} \bibinfo{year}{2019}),
+  \bibinfo{pages}{376–389}.
+\newblock
+\showISSN{2150-8097}
+\urldef\tempurl%
+\url{https://doi.org/10.14778/3368289.3368301}
+\showDOI{\tempurl}
+
+
+\end{thebibliography}

@@ -1,0 +1,51 @@
+
+
+
+
+
+
+
+\begin{table}[t]
+\centering
+\resizebox{0.48\textwidth}{!}{%
+\begin{tabular}{c|c|}
+\hhline{~-} %
+
+& \multicolumn{1}{|c|}{\colorhl Availability guarantees}
+\\ \hline
+
+ 
+\multicolumn{1}{|c|}{ \colorhl
+\begin{tabular}[c]{@{}c@{}}
+CP, ABD, All-aboard
+\end{tabular}} & 
+
+\multicolumn{1}{|c|}{ Always available}
+\\ \hline
+
+
+\multicolumn{1}{|c|}{ \colorhl ZAB, MP} &
+
+\multicolumn{1}{|c|}{
+\begin{tabular}[c]{@{}c@{}}
+Unavailable for the duration of a \\ predefined time-out after the leader node fails 
+\end{tabular}} 
+\\ \hline
+
+
+\multicolumn{1}{|c|}{ \colorhl
+\begin{tabular}[c]{@{}c@{}}
+Hermes, CRAQ, CHT, \\ CHT-multi-ldr, Derecho
+\end{tabular}} &
+\multicolumn{1}{|c|}{ 
+\begin{tabular}[c]{@{}c@{}}
+Unavailable for the duration of a \\ predefined time-out after any node fails
+\end{tabular}} 
+
+\\ \hline
+\end{tabular}
+}
+\caption{\y{A summary of the availability guarantees of the \pnum\ protocols, with up to $f$ failures (with $2f + 1$ nodes). }}
+\label{tab:avail}
+
+\end{table}

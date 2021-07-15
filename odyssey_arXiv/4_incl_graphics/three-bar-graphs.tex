@@ -1,0 +1,21 @@
+\begin{figure*}[t]
+\centering
+  \begin{subfigure}[b]{0.33\textwidth}
+    \includegraphics[width=\textwidth]{1_figures/single-thread.pdf}
+    \caption{Single-threaded write throughput}
+  \label{fig:single-thr}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.33\textwidth}
+    \includegraphics[width=\textwidth]{1_figures/Write-only-chart.pdf}
+    \caption{Multi-threaded write throughput}
+  \label{fig:write-all}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.33\textwidth} 
+  
+    \includegraphics[width=\textwidth]{1_figures/5perc-writes.pdf}
+    \caption{Multi-threaded throughput at 95\% reads}
+  \label{fig:5perc}
+  \end{subfigure}
+  \caption{Throughput comparison of all protocols in M.reqs/s. Note that both the x-axes and y-axes are different in each graph.}
+  \label{fig:three-bars}
+\end{figure*}

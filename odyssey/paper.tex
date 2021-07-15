@@ -1,0 +1,82 @@
+ \PassOptionsToPackage{usenames, dvipsnames, table, xcdraw}{xcolor}
+\documentclass[sigplan, screen]{acmart}
+%Set printacmref to true to get acm ref. Note that the title cannot use \large or \bf in that case
+% \settopmatter{printacmref=false, printccs=true, printfolios=false}
+\acmSubmissionID{124}
+
+
+% \renewcommand\footnotetextcopyrightpermission[1]{}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+
+\copyrightyear{2021}
+\acmYear{2021}
+\setcopyright{acmcopyright}\acmConference[EuroSys '21]{Sixteenth European Conference on Computer Systems}{April 26--28, 2021}{Online, United Kingdom}
+\acmBooktitle{Sixteenth European Conference on Computer Systems (EuroSys '21), April 26--28, 2021, Online, United Kingdom}
+\acmPrice{15.00}
+\acmDOI{10.1145/3447786.3456240}
+\acmISBN{978-1-4503-8334-9/21/04}
+    
+\input{1_packages.tex}
+\input{2_macros_n_comments.tex}
+
+%%%%%%% This is for when hyperef is failing
+% \hypersetup{draft}
+%%%%%%%
+
+\begin{document}
+
+\title[Odyssey: The Impact of Modern Hardware on Replication Protocols ]{ Odyssey: The Impact of Modern Hardware on Strongly-Consistent Replication Protocols}
+
+\date{}
+\input{0_authors/author-acm}
+\input{0_sections/0_abstract.tex}
+\maketitle
+% \pagestyle{plain} % removes the annoying per-page headers
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+\thispagestyle{empty}
+
+
+\input{0_sections/1_introduction.tex}
+\input{0_sections/2_background.tex}
+\input{0_sections/2z5_Protocols}
+\input{0_sections/30_Odyssey}
+\input{0_sections/4_Methodology}
+\input{0_sections/5_Evaluation}
+% \input{0_sections/7_discussion.tex}
+\input{0_sections/8_related_work.tex}
+\input{0_sections/9_conclusion}
+\input{0_sections/9z_acks}
+
+
+
+
+% \clearpage
+% \renewcommand{\baselinestretch}{1.0}
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+%\thispagestyle{empty}
+
+%%% ACM Bibliography Style
+%\bibliographystyle{style/ACM-Reference-Format}
+%\bibliography{paper}
+
+%%% IEEE Bibliography Style
+%\bibliographystyle{abbrv}
+%\bibliography{paper}
+
+%%% USENIX Bibliography Style
+% {\footnotesize 
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{paper}
+% }
+%\theendnotes
+
+% \appendix
+% \input{0_sections/_9_appendix.tex}
+
+\end{document} 

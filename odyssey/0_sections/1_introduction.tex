@@ -1,0 +1,765 @@
+\section{Introduction}
+\label{sec:introduction}
+
+% \antonis{ Two general comments:
+% 1) several (sub-)section (bold text) titles are inconsistent capitalized. I.e., some are all-words-first-letter capitals while others are first-word-first-letter capital
+% 2) a lot of (stale from "Pixie") occurrences of "a Odyssey ..." which should have been "an Odyssey ..."}
+
+Online services and cloud applications replicate their datasets to remain available in the face of faults. 
+Reliable replication protocols are deployed to maintain consistency among the replicas.
+This work focuses on the performance of strongly-consistent, fault-tolerant replication protocols for Get/Put Key-Value Stores deployed within the datacenter.
+
+The performance of replication protocols has been repeatedly evaluated on various deployments over the years~\cite{Ailijiang:2019}. However traditional protocol design and evaluation has not taken into account \emph{modern hardware}. 
+What do we mean by modern hardware, and why is it important when comparing the performance of protocols?
+
+\custvspace
+
+Over the last 10-15 years, the server-grade hardware landscape has changed drastically~\cite{Barroso:2017}.
+Servers with two or four cores per chip have given way to many-core chips with tens of cores, kernel-based 1 Gbps networking has given way to user-level networking with 10s or 100s of Gbps and finally, main memory has been scaled to 100s of GBs with 10s of Gbps worth of bandwidth. 
+These advances challenge the conventional wisdom on protocol design in two ways.
+
+\custvspace
+Firstly, to benefit from the significant increase in hardware-level parallelism across compute, network, and memory, protocols must be multi-threaded. % in order to take advantage. % of this parallelism. 
+Indeed, a single-threaded protocol not only fails to utilize the available cores in a many-core system, but also the available network and memory bandwidth~\cite{Li:2016,Kalia:2016}.
+
+Problematically, traditional protocol design has seldom considered threading; rather it has typically assumed that each node consists of a single serial process. 
+For instance, a leader-based protocol specification typically assumes and often relies on the fact that the leader executes serially.
+Unsurprisingly, designing protocols without considering threading often results in non-scalable protocols. % that ``do not scale''.  %non-scalable protocols.
+
+\custvspace
+The second aspect of protocol design challenged by modern hardware is the need (or the lack thereof) for optimizing around the millisecond I/O speed. 
+Specifically, protocols have traditionally been designed to: 1) reduce the number of messages per request and 2) avoid random memory look-ups which could result in disk accesses. Achieving these properties at the cost of thread-scalability or load balancing has been considered to be an acceptable trade-off.
+The reasoning is simple: in yesterday's world, either of these actions costs milliseconds and can therefore skyrocket the request's latency, resulting in user dissatisfaction and violations of the service-level agreements.
+
+
+This is no longer the case, however. 
+The hefty increase in main memory capacity has catalyzed the advent of in-memory databases~\cite{Lim:2014, Li:2016}; randomly accessing a memory object is now a nanosecond operation.
+Similarly, with modern, user-space and hardware-offloaded networking (e.g., RDMA), sending a message is a microsecond action~\cite{Dragojevic:2014}.
+Therefore, in the modern era, the protocol designer no longer needs to sacrifice properties such as thread-scalability or load balance in order to decrease latency. 
+%the number of messages (or look-ups) per request. 
+
+In fact, in the modern era we argue that the opposite is true: in order to optimize latency, one should actually prioritize thread-scalability and load balance.
+Here is why. With networking and memory accounting for a few microseconds, the request latency does not typically exceed a few tens of microseconds on a lightly loaded system. 
+Therefore, to ensure microsecond latency, we need only ensure that the system is not overloaded.
+This calls for high-throughput protocols as they are less likely to be overloaded by the target throughput. 
+To maximize throughput,  thread-scalability and load balance should be prioritized over traditional metrics such as number of messages per request.
+Our evaluation corroborates this hypothesis (\S~\ref{sec:ev}).
+
+\beginbsec{Research questions}
+Thus far, we have argued that modern hardware has challenged conventional wisdom on protocol performance. How do protocols proposed in the literature perform on modern hardware? If one wishes to design a new protocol, what are the best practices one should adhere to? 
+
+In order to provide the answers we set out to evaluate and compare strongly-consistent replication protocols deployed on modern hardware 
+over a state-of-the-art replicated Key-Value Store.
+Below we analyze the challenges in performing this study, how we tackle them and finally the contributions of this paper.
+
+\beginbsec{A taxonomy for protocol selection (\S\ref{sec:tax})}
+Firstly, it is neither feasible not tractable to meaningfully compare every single proposed protocol.
+We must therefore select a few representative protocols that capture the design space, allowing us to extrapolate their results to the rest. 
+To this end, we first develop a taxonomy of existing protocols, classifying them into four classes based on their operational patterns (\secref{sec:tax}).
+To understand the performance of the different classes of protocols, we carefully select \pnum~protocols for analysis:
+ZAB~\cite{Hunt:2010},  
+Multi-Paxos~\cite{Lamport:2001}, 
+CHT and multi-leader CHT~\cite{Chandra:2016}, 
+CRAQ~\cite{Terrace:2009}, 
+Derecho~\cite{Jha:2019}, 
+Classic Paxos (CP)~\cite{Lamport:1998}, 
+All-Aboard Paxos~\cite{Howard:2019}, 
+ABD~\cite{Lynch:1997} and 
+Hermes~\cite{A:2020}. 
+
+
+\beginbsec{\odlib: building protocols in the modern era (\S\ref{sec:od})}
+The second challenge is facilitating 
+an apples-to-apples comparison that extracts maximum performance from each of these protocols on modern hardware. 
+To overcome this challenge, 
+we present \odlib, a framework tailored towards protocol implementation for multi-threaded, \RDMA-enabled, in-memory, replicated KVSes. 
+Specifically, \odlib\ provides the functionality to perform all the non-protocol-specific tasks, such as initializing and connecting the nodes, managing the KVS and sending/receiving \RDMA\ messages.
+These tasks can account for up to 90\% of the codebase for the replication protocol, requiring domain-specific knowledge in networking and KVSes. With these tasks out of the way, the developer can focus on coding solely the protocol-specific components, significantly accelerating the development process, while also producing more reliable code. We implement all \pnum~protocols on top of \odlib. 
+% Our implementations significantly outperform their open-source counterparts, where they exist.
+
+\begin{comment}
+\begin{tcolorbox}
+\beginbsec{Pop Quiz}
+%In order to highlight the importance of comparing protocols, we pose the following questions to the reader. 
+Can you order the above ten protocols by their throughput? How will the order change if the protocols are single-threaded vs. multi-threaded? \\
+\beginbsec{Answer} \figref{fig:three-bars} 
+%(Answers are provided in \figref{fig:three-bars}.})
+\end{tcolorbox}
+\end{comment}
+
+\beginbsec{Comparison results (\S~\ref{sec:ev})}
+We answer the questions posed earlier by analyzing the results of our
+comparison of \pnum\ strongly-consistent replication protocols implemented over \odlib.
+Firstly, we characterize
+the performance capabilities of each class of protocols along with its possible optimizations. 
+This characterization allows us to provide an informed recommendation to those who seek to deploy an existing protocol, based on their needs.
+Secondly, the characterization reveals the relative importance and performance impact of properties such as thread-scalability, load balance, and the work-per-request ratio (\ie  the total cpu, network and memory resources required to complete a single request).
+By analyzing the effect of modern hardware on how such properties impact performance, we hope to inform the decisions of the protocol designer and steer the research community towards a more hardware-aware discussion.
+
+
+
+\beginbsec{Limitations}
+This work investigates the performance of strongly-consistent, fault-tolerant replication protocols for Get/Put replicated KVSes deployed within the datacenter. Note the limitations. We focus on strongly consistent protocols and not on weaker consistency models. We focus on reads and writes but not transactions. We assume a local area network and not geo-replication. Finally, we quantify the performance but not the availability guarantees of these protocols. (However, \secref{sec:fail} discusses the qualitative impact of design decisions on availability.)
+
+
+\beginbsec{Contributions} Summarizing, this work presents the following contributions.
+\squishlistContrib
+\item We present a taxonomy of strongly-consistent replication protocols based on their operational patterns (\S\ref{sec:tax}).
+\item We introduce \odlib, a framework that allows developers to  
+easily design, measure and deploy replication protocols over modern hardware (\S\ref{sec:od}).
+\item To the best of our knowledge, this paper presents the first ever implementation and evaluation of All-Aboard Paxos, CHT and CHT-multi-leader. 
+\item Using \odlib, we implement and evaluate \pnum~protocols that  
+span the design space of strongly-consistent protocols, presenting the first  
+apples-to-apples comparison over modern hardware.
+Our evaluation provides a complete characterization of the replication protocol design space and reveals the impact of modern hardware on the performance of replication protocols (\S\ref{sec:ev}).
+
+
+
+\squishend
+
+%---------------------------------------------
+%---------------OLD COMMENTS------------
+%---------------------------------------------
+{
+\begin{comment}
+Online services and cloud applications replicate their datasets to remain available in the face of faults. 
+Reliable replication protocols are deployed to maintain consistency among the replicas.
+% Replication protocols have been studied for decades. Paxos and the numerous protocols that have followed
+% , explored the various ways in which  consensus can be achieved. Crucially, consensus is necessary in order to atomically modify the replicas of a given data item. Or, in other words, consensus is necessary to execute a conditional PUT (\ie a Read-Modify-Write). For that reason, strongly-consistent replication protocols that can solve consensus underpin modern KVSes. 
+This work focuses on the performance of strongly-consistent, fault-tolerant replication protocols for Get/Put Key-Value Stores, deployed within the datacenter.
+% \todo{lan-datacenter discussion}
+
+The performance of replication protocols has been repeatedly evaluated on various deployments  over the years~\cite{Ailijiang:2019}. However traditional protocol design and evaluation has not taken into account \emph{modern hardware}. 
+% Putting it succinctly, traditional protocol design and evaluation does not consider multi-threading. %the tens of hardware threads available in today's hardware.
+What is then this modern hardware, and why is it important when comparing the performance of protocols?
+
+\custvspace %\subsection{Modern Hardware}
+
+Over the last 10-15 years, the server-grade hardware landscape has changed drastically~\cite{Barroso:2017}.
+Servers with two or four cores per chip have given way to many-core chips with tens of cores, kernel-based 1 Gbps networking has given way to user-level networking with 10s or 100s of Gbps and finally, main memory has been scaled to 100s of GBs with 10s of Gbps worth of bandwidth. 
+These advances challenge the protocol design conventional wisdom in two ways.
+
+\custvspace
+Firstly, the significant advance in hardware parallelism across compute, network and memory, requires that protocols are multi-threaded, in order to take advantage. Indeed, a single thread not only fails to utilize the available cores in a many-core system, but also the available network and memory bandwidth~\cite{Kalia:2016}.
+
+Problematically, traditional protocol design has never considered threading; rather it assumes that each node is inhibited by a single serial process. 
+For instance, a leader-based protocol specification always assumes -- and often relies on the fact -- that the leader executes serially.
+Unsurprisingly, designing protocols without considering thread-scalability often results into non-thread-scalable protocols.
+
+\custvspace
+The second aspect of protocol design challenged by modern hardware is the need to optimize around the millisecond IO speed. 
+Specifically, protocols have historically been designed to 1) reduce the number of messages per request and 2) avoid random memory look-ups which could result in disk accesses. Achieving these properties at the cost of thread-scalability or load balancing has been an acceptable trade-off.
+%looking up objects of the data store in disk.
+% In fact, important properties, such as load balancing, are often sacrificed to favour latency.
+The reasoning is simple: in yesterday's world either of these actions cost milliseconds and can therefore skyrocket the request's latency, resulting in user dissatisfaction and violations of the service-level agreements.
+
+
+This is no longer the case.
+The hefty increase in main memory capacity has signaled the advent of in-memory databases~\cite{Lim:2014, Li:2016}; randomly accessing a memory object is now a nanosecond operation.
+Similarly, with modern, user-space and hardware-offloaded networking (\eg RDMA), sending a message is a micro-second action~\cite{Dragojevic:2014}.
+Therefore, in the modern era, the designer no longer needs to sacrifice properties such as thread-scalability or load balance in order to decrease the number of messages (or look-ups) per request. 
+
+Instead, in the modern era the opposite is true. In order to favour latency, one should prioritize thread-scalability and load balance. %maximize throughput.
+Here is why. Since networking and memory only account for a few microseconds, it must be that in an unloaded system, a request's latency does not exceed a few tens of microseconds.
+Therefore, to ensure a microsecond latency, we need only ensure that the system is not overloaded.
+To do so, we should favour high-throughput protocols, seeing as the target throughput is less likely to overload them. 
+To maximize throughput,  thread-scalability and load balance should be favoured over the number of messages per request.
+% In turn, protocols with higher peak throughput enjoy lower latencies at the target throughput.
+Our evaluation corroborates this hypothesis (\S~\ref{sec:ev}).
+
+
+
+% Furthermore, note that since networking and memory only account for a few microseconds, it must be that in an unloaded system, a request's latency does not exceed a few tens of microseconds.
+% Therefore, to ensure a microsecond latency, we need only ensure that the system is not overloaded.
+% To do so, we should favour high-throughput protocols, seeing as the target throughput is less likely to overload them. This is also corroborated in our evaluation.
+
+
+% In fact, this signals a paradigm shift on how we think about latency in replication protocols. 
+% Given that networking and memory can only account for a tiny fraction of a request's latency budget, queuing becomes 
+% the dominant factor -- and the only one that can account for milliseconds.
+% Seeing as queuing time is reduced when throughput is increased, the goals of throughput and latency become aligned instead of conflicting.
+% This means that protocol design no longer needs to explicitly try to reduce message transmissions. Instead the goal should be to increase throughput.
+
+
+\beginbsec{Research Questions}
+Seeing as modern hardware changes the requirements to achieve high performance, we pose the questions: 
+if one wishes to choose a protocol from the existing literature, which protocol should they prefer based on their own requirements?  
+Furthermore, if one wishes to design a new protocol what are the best practices they should honour in the modern era?
+
+In order to provide the answers we set out to evaluate and compare strongly-consistent replication protocols deployed inside the modern datacenter, over a state-of-the-art replicated Key-Value Store.
+
+% how do the various proposed protocols fare when deployed over modern hardware? and how do they compare against each other? What are the best practices when designing protocols for the modern era?  %Can we use the insightHow should one go about designing protocols in the era of modern hardware?
+
+\custvspace
+% There are two challenges We are faced with two main challenges.
+\noindent Our endeavor is met with two challenges.
+
+\beginbsec{A taxonomy for protocol selection (\S\ref{sec:tax})}
+% To perform the  are two main challenges to providing the answers.
+Firstly, it is not feasible or tractable to meaningfully compare every single proposed protocol.
+% Instead, we select the following \pnum~protocols that can capture the design space of strongly-consistent protocols: 1) Classic Paxos (CP), 2) Multi-Paxos (MP), 3) ZAB, 4) Derecho, 5) CRAQ~\cite{Terrace:2009}, 6) All-Aboard Paxos, 7) ABD, 8) CHT, 9) multi-leader CHT and 10) Hermes. We provide the rationale behind this selection in \secref{sec:}.
+% \todo{ask question}
+We must, therefore, select a few, representative protocols that capture the design space, allowing us to extrapolate their results to the rest. 
+Towards that purpose, we first create an informal classification of existing protocols, based on their operational patterns.
+We elaborate on the taxonomy on \secref{sec:tax}. To capture the performance of the different classes of protocols we select \pnum~protocols:
+% that is based on two orthogonal operational patterns:
+% 1) leader-based vs decentralized and 2) total order vs per-key order.
+% Total order implies that protocols create a total order of all writes and apply them to the KVS in that order. In contrast, per-key order mandates that protocols only enforce a total order of writes at a per-key basis. Leader-based protocols utilize a single node (\ie a leader) to enforce the ordering of the writes, while decentralized protocols achieve the same effect in a distributed manner.
+% \tabref{tab:tax} depicts the resulting four classes.
+% To capture them we select \pnum~protocols to capture: 
+ZAB~\cite{Hunt:2010},  
+Multi-Paxos~\cite{Lamport:2001}, 
+CHT and multi-leader CHT~\cite{Chandra:2016}, 
+CRAQ~\cite{Terrace:2009}, 
+Derecho~\cite{Jha:2019}, 
+Classic Paxos (CP)~\cite{Lamport:1998}, 
+All-Aboard Paxos~\cite{Howard:2019}, 
+ABD~\cite{Lynch:1997} and 
+Hermes~\cite{A:2020}.
+
+
+
+% \custvspace
+\beginbsec{\odlib: building protocols in the modern era (\S\ref{sec:od})}
+The second challenge is facilitating 
+%comparing these protocols.
+% We need to create 
+an apples-to-apples comparison that stretches the limits of these protocols in the modern hardware. 
+To overcome this challenge, 
+% \vasilis{up to here}
+% However, from these protocols only Hermes is implemented for modern hardware (multi-threaded, in-memory and RDMA-enabled). All-aboard Paxos has only been sketched in Howard's thesis, while CHT has no implementation.
+% %, when deployed over  modern Get/Put KVS
+% Instead of attempting to port all existing implementations into modern hardware, we take a more holistic approach. We implement all protocols (including Hermes) from scratch, using best known practices and optimizations across all of them.
+% In order to achieve that task,
+% To tackle this issue
+we present \odlib, a rich set of libraries tailored towards protocol implementation for multi-threaded, \RDMA-enabled, in-memory, replicated KVSes. 
+% \odlib~requires that t
+Specifically, \odlib~provides the functionality to perform all the non-protocol-specific tasks, such as initializing and connecting the nodes, managing the KVS and sending/receiving \RDMA\ messages.
+These tasks usually account for up to 90\% of the codebase for the replication protocol, requiring domain-specific knowledge in networking and KVSes. With these tasks out of the way, the developer can focus on coding solely the protocol-specific components, significantly accelerating the development process, while also producing more reliable code.
+
+% The developer need only code the protocol-specific components, while \odlib~takes care of all non-protocol-specific tasks such as initializing and connecting the nodes, managing the KVS and sending/receiving \RDMA\ messages.
+% Notably, the functionality offered by \odlib~is similar in nature to that of Paxi~\cite{Ailijiang:2019}. However, Paxi does not target modern hardware: it is neither multi-threaded nor \RDMA-enabled.
+We implement all \pnum~protocols on top of \odlib. Our implementations significantly outperform their open-source counterparts, where they exist.
+
+
+% and as such it falls short of our goals.
+% falls short of the goal set by \odlib~to explicitly target modern hardware.
+
+% \todo{the following must go}
+% \custvspace
+% Our study of \pnum~protocols deployed over modern hardware reveals the following results.
+% Firstly, we show the three main principles that protocols must uphold in order to maximize throughput.
+% \squishenum
+% \item Thread-scalability: Protocols must be thread-scalable, otherwise they cannot take advantage of the parallelism advances in modern hardware.
+% \item Load Balance: The work-per-request, \ie the total amount of CPU, network and memory resources used for each request, must be, on average, evenly distributed among all nodes.
+% \item Work-per-request: the overall work required to complete a request must be minimized and amortized among requests, without sacrificing load balance.
+% \squishenumend 
+% \todo{message to convey: the principles are obvious, the non-obvious is whether protocols abide by}
+
+% Secondly, our evaluation shows that almost all proposed protocols not geared towards these goals.
+% In some cases, protocols cannot scale to more than a few threads, while in other cases load balance is sacrificed to reduce work-per-request, with the ultimate goal of minimizing latency in the face of slow IO.
+\beginbsec{Comparison results (\S~\ref{sec:ev})}
+In \secref{sec:ev}, we answer the research questions posed earlier by analyzing the results of our
+comparison of \pnum~strongly-consistent replication protocols implemented over \odlib.
+% Specifically, we reveal two insights. % revealed are twofold. 
+Firstly, we provide a characterization of the design space of strongly-consistent replication protocols for modern hardware, detailing the performance capabilities of each class of protocols along with its possible optimizations. 
+This characterization allows us to provide an informed recommendation to those who seek to deploy an existing protocol, based on their needs.
+
+Secondly, the characterization reveals the relative importance and performance impact of properties such as thread-scalability, load balance and the work-per-request ratio (\ie  the total cpu, network and memory resources required to complete a single request).% in the modern era.
+Presenting the surprising effect of modern hardware in how such properties impact performance, we hope to inform the decisions of the protocol designer and steer the research community towards a more hardware-aware discussion.
+
+\beginbsec{Question for the reader}
+In order to highlight the importance of comparing protocols, we pose the following questions to the reader. Can you order the ten protocols in ascending throughput order? Will the ordering change if the protocols are single-threaded as opposed to multi-threaded?
+The answers are provided in \figref{fig:three-bars}.
+
+% Finally, our intention in presenting this comparison is that the surprising impact of modern hardware on the performance of protocols will 
+% impact how both the theory and the practice communities think about replication protocols.
+%intrigue the community,  in  results will intrigue the community, providing an important 
+
+% As a result our evaluation allows us to 1) provide an informed recommendation to those who seek to deploy an existing protocol, based on their needs 2) inform the decisions of the protocol designer and 3) surprise the community 
+% The results
+
+\beginbsec{Limitations}
+% Note the scope of this work: we investigate the performance of
+This work investigates the performance of strongly-consistent replication protocols.
+%that are deployed over a Get/Put replicated KVS within a modern datacenter.
+Note the limitations: we study a Get/Put API (with conditional Puts) replicated KVS that is deployed within the datacenter (\ie we assume a local area network).
+Finally, note that we study only the performance of protocols but not their availability guarantees. However, \secref{sec:fail} discusses the impact of design decisions on availability.
+
+% Therefore our results are limited to high-end local area networks.
+
+%Specifically, using \odlib~results in a heavily multi-threaded system that optimally utilizes RDMA-capable networks, on top of a state-of-the-art in-memory KVS. 
+% Conversely, using Paxi will result in a single-threaded, TCP-based system. 
+% Consequently, \odlib~based protocols outperform their Paxi-based counterparts by roughly two to three orders of magnitude (in terms of throughput).
+\beginbsec{Contributions} Summarizing, this work presents the following contributions.
+\squishlistContrib
+\item We present a taxonomy of strongly-consistent replication protocols based on their operational patterns (\S\ref{sec:tax}).
+\item We present \odlib~a rich set of libraries that allow developers to  
+easily design, measure and deploy replication protocols over modern hardware (\S\ref{sec:od}).
+\item Using \odlib, we implement and evaluate \pnum~protocols that  
+span the design space of strongly-consistent protocols, presenting the first  
+apples-to-apples comparison over modern hardware.
+Our evaluation provides a complete characterization of the replication protocol design space and reveals the impact of modern hardware on the performance of replication protocols (\S\ref{sec:ev}).
+
+\item Finally, to the best of our knowledge, this paper presents the first ever implementation and evaluation of All-Aboard Paxos, CHT and CHT-multi-leader. 
+% With the exception of Hermes, the rest of the protocols were not originally implemented in a multi-threaded, RDMA-enabled manner.
+%(CP, ZAB, Multi-Paxos, Derecho, ABD)
+
+% \item We highlight the three types of problems, which prohibit existing   
+% protocols from utilizing modern hardware: thread-scalability,  
+% load-balance and work-per-request, creating a guide for protocol  
+% design in the era of modern hardware.
+\squishend
+\end{comment}
+\begin{comment}
+With focus shifted on throughput, we set three goals to maximize it.
+\squishenum
+\item Thread-scalability: Protocols must be thread-scalable, otherwise they cannot take advantage of the parallelism advances in modern hardware
+\item Load Balance: The work-per-request, \ie the total amount of CPU, network and memory resources used for each request, must be, on average, evenly distributed among all nodes
+\item Work-per-request: the overall work required to complete a request must be minimized and amortized among requests, without sacrificing load balance.
+\squishenumend 
+
+Existing protocols are not geared towards these goals because 1) thread-scalability has not been recognized and 2) load balance has often been sacrificed to reduce work-per-request, with the ultimate goal of minimizing latency in the face of slow IO.
+\end{comment}
+
+
+\begin{comment}
+
+
+
+
+% Conventional wisdom mandates that accessing memory and accessing the network have been millisecond actions for so long, protocols have also been designed to minimize the number of memory accesses and 
+ 
+% The focus has consistently been on the number of network round-trips needed per request. The reasoning is simple: in yesterday's networking, where sending a message is a millisecond action, sending multiple messages to complete a single request can skyrocket the request's latency, resulting in user dissatisfaction and violations of the service-level agreements.
+
+% These advances challenge the conventional wisdom of protocol design in two ways.
+
+% Traditionally, protocols have been designed to minimize the \emph{work-per-request} metric, \ie the cpu, memory and network bandwidth required to complete a single request. The focus has consistently been on the number of network round-trips needed per request. The reasoning is simple: in yesterday's networking, where sending a message is a millisecond action, sending multiple messages to complete a single request can skyrocket the request's latency, resulting in user dissatisfaction and violations of the service-level agreements.
+
+% In today's world, where sending a message is a microsecond action, the assumption is negated.
+% In the light of this three-orders-of-magnitude decrease, networking can only account for a few microseconds of a request's latency. As a result, the dominant factor in latency -- and the only one that can account for milliseconds -- is queuing.
+% Therefore, the burden to uphold latency service-level agreements now shifts to throughput.
+
+Which brings us to the second and most important aspect of modern hardware: multi-threading.
+%Note the synergy between the advances: modern networks demand that applications are multi-threaded. Plainly, a single core cannot keep up with a modern high-bandwidth NIC~\cite{Kalia:2016}. Instead, tens of threads are needed in order to meaningfully utilize modern NICs -- and thus justify investing on them. Unsurprisingly, the same trend is observed with memory bandwidth.
+%
+% Plainly, modern hardware brings thread-scalability into the foreground, designating it as the single most important property to achieve high-performance.
+% A protocol that is very efficient, but is only deployed in a single thread, cannot compete with a thread-scalable protocol that is deployed in 40 threads, even if the latter has a less efficient operation (\eg because it requires more rounds to complete a write).
+%
+Problematically, traditional protocol design does not consider threading; rather it assumes that each process is a single serial execution unit. 
+For instance, a leader-based protocol specification will always assume -- and often rely on -- the fact that a leader executes serially.
+Up until recently, we could get away with this one-process-one-thread abstraction,
+by simply splitting the one-thread into discrete jobs to create a pipeline of a few threads.
+For example, a thread polls for replies while a second thread sends messages.
+Such a tactic was sufficient to adequately utilize the available resources of a few core chip.
+% and then behind the scenes leverage the additional hardware threads of a few-core chip by simply splitting the one thread into discrete jobs to create a pipeline of a few threads. 
+
+However
+With today's modern hardware this practice can no longer cut it, as it cannot scale to tens of threads, especially when all threads are required to engage with the NIC to keep it busy.
+
+
+\end{comment}
+
+\begin{comment}
+Albeit rich, the replication literature is also vast, with proposals originating from different communities with varying evaluation practices. As a result proposals often 
+%written in unfamiliar language -- for legacy reasons-- and even more commonly, 
+lack concrete system evaluations or comprise prototype implementations not tailored for performance.
+More importantly, during the last thirty years, the hardware landscape has changed drastically,
+%challenging the prevalent assumptions about which metrics a protocol must optimize and 
+thus
+rendering even well-crafted evaluations irrelevant. 
+
+Specifically, modern many-core servers and high-bandwidth networks with user-level libraries
+can only be leveraged if the protocol scales across multiple threads.
+Plainly, modern hardware brings thread-scalability into the foreground, designating the single most important property to achieve high-performance.
+A protocol that is very efficient, but is only deployed in a single thread, cannot compete with a thread-scalable protocol that is deployed in 40 threads even if the latter has a less efficient operation (\eg because it requires more rounds to complete a write).
+
+However, traditionally, in protocol design we do not consider threads; rather we assume that each process is a single serial entity. For instance a leader-based protocol always assumes and often relies on the fact that a leader executes serially.
+
+% Therefore, a protocol that was effiperforms well in a four-core system with a 1Gbps Ethernet NIC,
+
+
+% Specifically, a protocol that performs well in a four-core system with a 1Gbps Ethernet NIC, may not be so when deployed in servers with tens of cores and \RDMA-capable high-bandwidth networks (10s of Gbps).
+
+
+% Specifically, modern many-core servers and high-bandwidth networks with user-level libraries are creating a shift towards protocols that prioritize request-level parallelism over per-request message count.
+% making even well challenging the prevalent assumption about which metrics a protocol must optimize. 
+\end{comment}
+\begin{comment}
+
+
+
+\custvspace
+As a result, we are today faced with tens of different strongly consistent replication protocols but without any comprehensive way of deciding what best suits the modern-day needs.
+% Our thesis is that in order to overcome this problem we need to orchestrate an evaluation 
+There are two main challenges to overcoming this problem.
+
+Firstly, it is not feasible or tractable to meaningfully compare every single proposed protocol. We must, therefore, select, a few representative protocols that capture the design space, allowing us to interpolate results to the rest. In order to, achieve this, we first create an informal classification of existing protocols, that is based on their operational patterns, such that we can capture the behaviour of groups of protocols in a multi-threaded scenario.
+Through this taxonomy, we select 9 protocols that can capture the design space of strongly consistent replication protocols: Classic Paxos, Multi-Paxos, ZAB, Derecho, All-Aboard Paxos, ABD, CHT, multi-leader CHT and Hermes.
+
+
+The second -- and most critical -- challenge is comparing these protocols.
+We need to create an apples-to-apples comparison for the these protocols, when deployed over  modern Get/Put KVS
+
+Instead, we must select a few protocols 
+
+
+\custvspace
+\noindent In order to address this issue, we take three steps. 
+%with a focus on systems that offer \RMWs~and reads, 
+
+\beginbsec{1. Odyssey}
+We first present \odlib, a system that provides a software substrate for the design of replication protocols tailored for modern hardware. 
+Specifically, \odlib~provides the required functionality to: spawn and pin software threads, 
+create the Key-Value Store (KVS), create message flows between servers, and send and receive various types of messages.
+Using \odlib, the developer need only code the protocol-specific components of their protocol.%, where she can still rely on functionality provided by \odlib. 
+Notably, the functionality offered by \odlib~is similar to that of Paxi~\cite{Ailijiang:2019}. However, Paxi falls short of the goal set by \odlib~to explicitly target modern hardware. 
+
+Specifically, using \odlib~results in a heavily multi-threaded system that optimally utilizes RDMA-capable networks, on top of a state-of-the-art in-memory KVS. 
+Conversely, using Paxi will result in a single-threaded, TCP-based system. 
+Consequently, \odlib~based protocols outperform their Paxi-based counterparts by roughly two to three orders of magnitude (in terms of throughput).
+%, and thus stress different parts of the system, resulting in different conclusions than Paxi.
+
+%considerably  environment with lower resources (\ie VMs with a couple of cores and TCP networking).
+% Therefore, the purpose of \odlib~is different than that of Paxi; consequently we can 
+% : specifically select the types of messages to be exchanged and handlers for manipulating said messages to execute protocol-specific actions.
+
+\beginbsec{2. Protocol Classification}
+Secondly, we create a simple classification of consensus protocols based on their operational patterns. Specifically, we divide the existing consensus literature in two broad classes:
+1) leader-based protocols that use a specific \emph{leader} node to serialize RMWs to the same key 2) leaderless protocols that serialize RMWs without the use of a leader node. 
+\secref{sec:tax} in conjunction with \tabref{tab:tax}, elaborate on the sub-classes within each of the two classes.
+
+\beginbsec{3. Implementations and Evaluations}
+We select seven consensus protocols (in bold in \tabref{tab:tax}) that serve as the most promising representatives of the different design points within the consensus design space. We implement them on top of \odlib~and present the evaluation in this work. 
+\emph{This is the first apples-to-apples comparison of several protocols with implementations that explicitly target modern hardware}.
+%The evaluation exposes the strong and weak points of the each design points in the modern era showcasing the relation of the different protocols, which we believe will surprise the reader.
+The comparison reveals a number of surprising results that challenge conventional wisdom.
+
+Finally, amongst the well-known systems that are evaluated in this work, we also implement and measure \emph{All-aboard Paxos}, which is sketched in Howard's thesis~\cite{Howard:2019} as a potential Flexible Paxos~\cite{Howard:2018} application. To our knowledge we are the the first to draw a complete specification of the protocol, build it into a complete system and evaluate its performance.
+
+\custvspace
+\noindent In conclusion, this work aspires to affect the community in the following ways. 
+\squishlistContrib
+\item \odlib, once open-sourced, will allow developers to easily design, measure and deploy new protocols over modern hardware.
+% \item Our classification will provide the system designer with a meticulous examination of the performance trade-offs amongst consensus protocols, allowing them to navigate the vast literature.
+\item Our implemented protocols will serve as a guide on how to use \odlib.
+\item Our evaluation will shed light on the performance capabilities of a wide range of protocols that capture the design space of consensus, as it is the first apples-to-apples comparison for modern hardware for consensus.
+\squishend
+\end{comment}
+\begin{comment}
+
+
+We do this by designing 
+
+Specifically, we first create a classification of consensus protocols based on their operational patterns. From each class, we cherry-pick the most promising protocol and evaluate it as a complete system -- combined with reads and an underlying KVS. % optimized for modern hardware. 
+Crucially, all evaluated implementations are focused on modern hardware:  they are %implemented for modern hardware. They are 
+designed to be heavily multi-threaded and utilise all known strategies to leverage RDMA-capable networks.
+In addition, the comparison is fair from the grounds-up: \ie all systems are developed in the same ecosystem with the same set of assumptions and share as much code as possible (\eg shared Key-Value-Store, \RDMA~usage patterns, concurrency control, thread-pinning strategy, client interface etc.). %The code will be open-sourced.
+
+All, but one, of the protocols we evaluate are our own new implementations that outperform their original counterparts by up to 3 orders of magnitude in throughput. This showcases the necessity of this work: we need a fair comparison between protocols to understand their performance relations.
+
+
+Our classification will provide the system designer with a meticulous examination of the trade-offs amongst consensus protocols, allowing them to navigate the vast literature.
+In addition, it will provide an apples-to-apples performance comparison of protocols under the assumptions that matter -- \ie modern datacenter hardware. The comparison reveals a number of surprising results that challenge conventional wisdom.
+
+Finally, amongst the well-known systems that are evaluated in this work, we also implement and measure \emph{All-aboard Paxos}, which is sketched in Howard's thesis~\cite{Howard:2019} as a Flexible Paxos~\cite{Howard:2018} application. To our knowledge this work is the first to draw a complete specification of the protocol, build it into a system and evaluate its performance.
+
+\end{comment}
+
+
+
+\begin{comment}
+
+\subsection{The protocols}~\label{sec:tax}
+
+Below we provide a brief description of the systems we evaluate. We split our protocols in two broad classes. Leader-based and leaderless.
+% \input{4_incl_graphics/taxonomy-table}
+
+
+
+\beginbsec{Leader-based Protocols}
+
+\noindent\beginbseceval{ZAB}
+ZAB totally orders all updates (writes / RMWs) in a leader node.
+The leader then notifies the rest of the nodes (dubbed \emph{followers}), which must apply the RMWs in that global order.
+This allows ZAB to offer local reads while only downgrading 
+Our multi-threaded, \RDMA-enabled ZAB implementation outperforms the open-source implementation by three orders of magnitude. Our evaluation demonstrates that ZAB fundamentally hinders parallelism at the operational level. 
+%This is why in some configurations using CP instead is more beneficial.
+
+\beginbseceval{Multi-Paxos}
+Our Multi-Paxos implementation represents also other leader-based protocols such as Raft, VR, Fast-Paxos. These protocols are very similar to ZAB. We will conclude that both Multi-Paxos and ZAB are not good candidates for the \RMW.
+
+\beginbseceval{CHT}
+The CHT protocol is very similar to Multi-Paxos, but without the need to serialize all \RMW~operations. In addition, CHT uses per-object leases to perform reads locally in all replicas. We show that this approach vastly outperforms other leader-based approaches and is crucial to achieve high performance. The CHT protocol also encapsulates Primary-backup and Chain Replication.
+
+\custvspace
+For all leader-based approaches, we show that the hardware-offloaded multicasts that are offered in RDMA networking, can be very beneficial. The same does not hold true for the rest of the protocols that are decentralized.
+
+\beginbsec{Leaderless Protocols}
+
+\beginbseceval{Classic Paxos}
+We create a specification that uses Classic Paxos (CP)~\cite{Lamport:1998} to perform RMWs, without using a leader in a multi-threaded manner. Contrary to conventional wisdom we show that CP can provide surprisingly good performance (in terms of throughput) owing to its decentralized nature.
+
+\beginbseceval{Rotating Coordinators}
+We create our own implementation of Derecho, to encapsulate protocols with rotating coordinators (technically leaderless) such as Mencius and AllConcur. We show that rotating leaders are not good candidates for RMWs as they overly restrict parallelism.
+
+\beginbseceval{All-aboard-Paxos}
+For the first time we implement the All-aboard-Paxos proposal, which can commit an RMW early after a single rtt if no conflict is detected. We show that its throughput can be very competitive, but the computational complexity at its core, prevents it from reaching the full potential of the network. Our implementations of All-aboard Paxos also provides an upper bound on encapsulates proposals such as Generalized Paxos, EPaxos and Atlas.
+
+\beginbseceval{Hermes}
+Finally, we fork the open-source implementation of Hermes in our infrastructure to fairly evaluate it with other systems. Hermes is a leaderless protocol with local reads that assumes a stable configuration. Our evaluation corroborates Hermes' performance claims.
+\end{comment}
+\begin{comment}
+\custvspace
+In this work, we address these issues by providing a taxonomy of consensus protocols along with an evaluation of six prominent protocols as complete systems optimized for modern hardware.
+
+Specifically, we categorize existing consensus protocols into a taxonomy that consists of four classes. % of existing consensus protocols.% into four classes. 
+In order to understand the performance relation of each class, we evaluate representative protocols from all four classes. % (we evaluate three protocols from the "conflict-elimination" class to capture its variations). 
+Crucially, all protocols are %implemented for modern hardware. They are 
+designed to be  heavily multi-threaded and utilise all known strategies to leverage RDMA-capable networks.
+In addition, the comparison is fair from the grounds-up: \ie all systems are developed in the same ecosystem with the same set of assumptions and share as much code as possible (\eg shared Key-Value-Store, RDMA usage patterns, concurrency control, thread-pinning strategy, client interface etc.). The code will be open-sourced.
+
+Our taxonomy will provide the system designer with a meticulous examination of the trade-offs amongst consensus protocols, allowing them to navigate the vast literature.
+In addition, it will provide an apples-to-apples performance comparison of protocols under the assumptions that matter -- \ie modern datacenter hardware. The comparison reveals a number of surprising results that challenge conventional wisdom.
+
+Finally, amongst the well-known systems that are evaluated in this work, we also implement and measure \emph{All-aboard Paxos}, which is sketched in Howard's thesis~\cite{Howard:2019} as a Flexible Paxos~\cite{Howard:2018} application. To our knowledge this work is the first to draw a complete specification of the protocol, build it into a system and evaluate its performance.
+% Finally, it will reveal surprising results, that challenge the conventional wisdom. 
+
+
+Finally, as part of our evaluation, we implement and measure for the first time \emph{All-aboard Paxos}, which is sketched in Howard's thesis~\cite{Howard:2019} as a Flexible Paxos~\cite{Howard:2018} application. We draw a complete specification, measure its limits and present it as a viable option.
+
+
+
+\beginbsec{What this paper does}
+The purpose of this paper is dual: 1) it is addressed to the %needs of the 
+%modern 
+system designer, aiming to provide them with a map to navigate the vast literature of consensus. 2) It addresses the research community, aiming to 
+%challenge conventional wisdom, on what are the modern metrics for 
+drive the dialogue on 
+high-performance consensus algorithms, in the light of contemporary hardware.
+%, bringing to light a class of protocols, that has not yet received the warranted attention .% into new directions
+%attempts to  However, through this work we also aspire to drive the research community into to pursue new directions
+Towards these goals we present: a taxonomy of consensus protocols and a comprehensive evaluation of high-performance implementations of at least one representative protocol from each class.  
+Our taxonomy meticulously examines the trade-offs of the different techniques in the light of modern era hardware, revealing surprising results, that challenge the conventional wisdom, while also bringing to light a class of protocols, that has not yet received the warranted attention.
+In every step of the way, we substantiate our claims through the evaluated systems.
+
+
+\subsection{The Taxonomy}
+
+%\custvspace
+%\noindent
+%Our taxonomy classifies protocols based on how they deal with the performance challenge, which we explain below.
+
+%\beginbsec{Performance challenge in consensus protocols}
+Consensus protocols must account for failures. %, and that presents a challenge on providing performance.
+However, a failure cannot be differentiated from a slow node, thus presenting the  sender of a message with a dilemma, when a response has not been received. On the one hand, if the receiver has failed and the sender chooses to wait for the response, it will wait indefinitely. On the other hand, if the receiver is merely slow, and the sender chooses to not wait for the response, then the correctness of the protocol may be violated. 
+
+The typical solution to this issue, is to restrict the failures that can be tolerated to a fixed number, $f$. Then, on broadcasting a message to $N$ servers, the sender can safely wait for $N-f$ responses. This way the sender only waits indefinitely, if more than $f$ servers have failed.%, a behaviour allowed by the specification.
+
+Note the implications of this solution: protocol specifications can not enforce the invariant that a broadcast message reaches all replicas. As a result, when two different servers attempt to execute \emph{conflicting commands} (\ie commands that modify the same piece of data), and broadcast that intention, it is acceptable that they do not learn of each other's command. This handicap burdens the protocol with additional complexity to resolve such conflicts.
+
+Therefore, there is great complexity in designing a protocol that solve consensus under these two assumptions: 1) broadcasts are not guaranteed to reach all recipients and 2) nodes can attempt concurrent commands. Specifically, we can quantify said complexity, because there is only one protocol that solves consensus under both assumptions, that is Classic Paxos (CP)~\cite{Lamport:1998}. Dealing with the two assumptions forces CP to follow a very complicated path in its common operation that diminishes performance.
+
+Every other consensus protocol we know of relaxes one of the two assumptions in its common operation to reduce the common case complexity and thus increase performance.
+\end{comment}
+\begin{comment}
+However, this solution has a direct implication on performance: protocol specifications can not enforce the invariant that a broadcast message reaches all replicas. This handicap presents a challenge in designing high-performance protocols, seeing as \emph{in the face of conflicting consensus commands, %proposed by different servers
+the ability to reach all replicas is crucial.}
+
+
+\beginbsec{Fast-/slow-path}
+Specifically, consensus protocols attempt to either remove the possibility of conflicts, or grant the ability to reach all replicas. They do so through their \emph{fast-path}. Precisely,
+protocols leverage the observation that failures are not the common case, which allows the protocol to specify a \emph{fast-path}: an operational mode for the common-case, fault-free operation. 
+When a fault occurs~\footnote{ For simplicity, we refer to a suspected failure, simply as failure},
+%(or is suspected to have occurred)
+then the protocol can specify a transition to a \emph{slow-path}, where the protocol handles the suspected failure and returns to the fast-path.
+
+% \beginbsec{The Classification}
+\custvspace
+\noindent Our taxonomy classifies protocols based on this fast-path/slow-path approach. 
+
+\input{4_incl_graphics/taxonomy-table}
+
+\beginbseceval{Class-1: Conflict-elimination} 
+The fast-path of this class eliminates the possibility of conflicting commands, typically by designating a server as the leader. The leader then locally resolves conflicts and notifies the rest of the replicas (\ie the \emph{followers}). When the leader eventually fails, then the slow-path kicks in: the rest of the servers elect a new leader and revert to the fast-path. 
+
+\beginbseceval{Class-2: Stable-configuration}
+In this class, the fast-path assumes that the server configuration is always known, and thus all replicas are reachable at any given time. This allows the fast-path to ensure that \emph{all} replicas are notified of any new write, which substantially simplifies resolving conflicts.
+
+\beginbseceval{Class-3: Speculation} 
+This class implements the fast-/slow-path approach at the request-granularity. Specifically, it allows an early commit after a single round of broadcast, if there were no conflicts and/or a sufficient number of replicas has been gathered.
+If either condition is not met, the request goes in to the slow-path, executing an additional broadcast round. It is thus, a per-request, speculative technique, with a fallback. 
+\end{comment}
+\begin{comment}
+The potential upside of this approach is is not only performance but also high availability. The timeouts are implemented  per-request and, more crucially, the penalty of timing-out is only a few broadcast rounds for the offending request. Therefore the timeouts can be arbitrarily small, allowing for high availability.
+
+This class has not received substantial attention from the research community. 
+We remedy this by evaluating 
+
+% the only well-known protocol with that nature is EPaxos, which is underpinned by very complicated algorithm that communicates dependencies and build graphs of dependencies. 
+% An exemplar protocol in this class is 
+% However, there is another, recently proposed protocol, which is simpler and more efficient: 
+\emph{All-aboard Paxos}, a newly proposed, but never-before evaluated protocol. We believe that showcasing the 
+%We evaluate this protocol, showcasing 
+the benefits and the shortcomings of this approach, can have a profound impact in the research discussion on distributed consensus.
+%but also underlining the pitfalls.
+
+
+
+
+\beginbseceval{Class-4. Classic Paxos} % (favouring availability)}
+For completeness, we also include protocols without a fast-path. Such protocols do no try to optimize performance by make replicas reachable, or eliminate conflicts; rather they deal with these issues by being constantly in the slow-path, assuming the constant presence of failures. 
+The only protocol we know of in this category is Classic-Paxos (CP). 
+%CP incurs additional overhead in its common case, in order to maintain a complete availability robustness.
+Challenging the conventional wisdom, we show that because of its concurrent nature, CP can offer competitive performance in today's hardware. 
+
+
+
+
+\beginbsec{Contributions}
+\squishlistContrib
+\item We provide a taxonomy of consensus algorithms based on the fast-/slow-path approach.
+\item For each class of our taxonomy we describe: the availability vs performance trade-off, how reads can be added, which workloads are favoured, what is the supported API and the subtle implication of the class. 
+\item Alongside each class's description, we provide an evaluate an implementation of at least one representative protocol with the following properties: \RDMA-enabled, highly-multithreaded, implements reads (a common omission in consensus benchmarking) and runs over state-of-the art Key-Value Store.
+\squishend
+\vasilis{stopping here}
+\end{comment}
+\begin{comment}
+This new reality has motivated the research community to propose a plethora of new protocols and optimizations, attempting to  improve both performance  and comprehensibility of such systems. Meanwhile, advances in the hardware landscape, such as \RDMA-enabled, high-bandwidth networks and multi-core servers challenge the established performance metrics, making
+%of old. 
+protocols that leverage the new capabilities increasingly more appealing.
+
+Making matters worse, the performance evaluations of proposed protocols are rarely satisfying. In most cases the performance is not pushed to the edge, with the most common offences being, no multi-threading, not RDMA-enabled, no implementation of reads, no underling data structure (\eg KVS) and  not open-sourced. While in some cases protocols are not implemented at all. There is thus a clear need to provide the developer with a comprehensive map of the design space, where all the protocol options and their trade-offs are laid out and properly evaluated.
+
+
+
+In this work we answer this call. We break-down, analyze and explain existing protocols by creating a comprehensive taxonomy of techniques and their associated trade-offs while also evaluating a proper high-performance implementation for each class.
+
+
+\beginbsec{What this paper does}
+In order to do so, we first create a protocol taxonomy, where protocols are classified based on their availability guarantees. For each class, we enumerate the design choices and their trade-offs and we implement at least one representative protocol, in an \RDMA-based and multi-threaded manner, applying all proposed optimizations.
+system   of the techniques and we create high-performance
+We taxonomize the available techniques with respect to their availability guarantees. We build representative sys
+
+
+\end{comment}
+\begin{comment}
+%The emergence of new protocols as well as advances in the hardware landscape
+
+Alas, we deem the attempt to provide the system designer with a complete and comprehensive description of the design space unsatisfying. The designer is bombarded with a superabundance of options, metrics and promises, where %Perhaps, owning to the antagonistic nature of research, 
+trade-offs are often not described in their entirety, with important pieces being left out. 
+This does not necessarily constitute a criticism on the existing work. 
+Often implementation choices have very subtle side effects that can be 1) out of the scope of a proposal and 2) hard or even impossible to characterize and explain within a research paper. 
+Fleshing out such subtleties in the design space is what largely  necessitates this paper. 
+
+
+To make this more concrete, consider the subtlety on the following example, which illustrates the impact of sharding in the API and single-client performance.
+
+\beginbsec{Example}
+Assume a linearizable KVS with a single leader which serves all writes. In addition, assume that there is a client that connects to the KVS leader and issues a number of writes to different keys and -- crucially -- cares that the writes are applied in the intended order. 
+The designers, inspired by a new OSDI paper, optimize the system by electing a different leader for each key to increase the overall throughput. 
+Note, the impact of this optimization on the client demands: its writes must now be steered to the different leaders: whereas before a single leader would execute all writes and could thus locally enforce their order, now the order must be enforce by issuing requests synchronously 
+intended which means that the client itself must issue the requests synchronously. I.e., the client cannot issue all of its writes in a single packet, rather it must itself ensure that the order of its writes are maintained by issuing them one-by-one, waiting for each one to complete before preforming the next.
+
+
+% This is largely what necessitates our work.
+
+\beginbsec{What this paper does}
+In this work, we answer the following question: \emph{What is the true cost of strong consistency?} 
+We answer this question by describing the \emph{complete} trade-off for each of the existing protocols that can offer strong consistency semantics. 
+The emphasis on \qt{complete} is crucial: we do not look to measure which protocol prevails for any one given metric or for any one given workload. Rather we look to characterize every aspect of the trade-offs. 
+
+Assume a linearizable KVS with a single leader which serves all writes. The designers, inspired by a new OSDI paper, optimize the system by allowing all nodes to be leaders for different shards of the KVS, thus increasing the the overall throughput. 
+Whilst the overall throughput is indeed likely to increase; a number of questions regarding the complete trade-off of the optimization may remain unanswered. What is the impact on the client side, which now may need to communicate with multiple leaders? Does single-client performance remain unaffected? On suspecting a leader, how are their keys distributed? And more importantly, on a false positive, how does the suspected node reclaim their shard? 
+
+% It is entirely conceivable that the authors of the OSDI paper
+
+In this work, we bring to light the complete trade-offs of implementation choices with their various subtleties and side-effects. We demonstrate the impact of the trade-offs with quantitative data where possible or with qualitative data where not.
+
+\beginbsec{What this paper does \emph{not} do}
+In this work we will \emph{not} argue for any one protocol or optimization and we will \emph{not} look to pick on any given research proposal. 
+
+
+
+This paper, discuss the impact of this optimization
+For instance, assume 
+that how a decision made for a consensus protocols affects the client API, how can reads be implemented, how can faults be detected. Performance can be achieved at the cost of availability, consistency, but also even more subtle properties. 
+
+
+
+Therefore, whilst the optimization may have increased the overall throughput of the system, the throughput of a single client may have decreased.
+\end{comment}
+\begin{comment}
+
+
+\vasilis{Where do rotating coordinators fit in this picture?}
+
+\vasilis{who replies to clients, in the face of help and can we hope to preserve the exactly once semantics}
+
+\vasilis{What if the link between two nodes is down. Who can deal with that?}
+
+
+to chart the design space of linearizable and consensus protocols. After bucketizing exisiting research proposals and provide the complete trade-offs
+
+
+Purpose.
+the designer is bombarded with a superabundance of options choices, metrics, promises.
+Some promise their system will be fast based on number of rtts, or locality, conurrency and so on, while other have even promised supremacy through understanandability.
+We aim to focus on what is left out. 
+Perceived optimizations are more often than not trade-offs, where the sacrificed property is not revealed and is often subtle. Indeed the dimens
+Performance can be claimed, when reducing the number of rtts, but at the cost of the trhroughput or load balancing  blind to throughput, or load balancing or skew,
+A lot of the systems dont discuss how to do reads, they dont evaluate over actual databases where skew is a possibility
+We wish to provide clarity to the state of affairs. We intend to provide
+
+
+
+
+3 types of fast-slow path w.r.t transition in and out
+
+1. fully \qt{synchronous}:
+must gather all acks, local lin reads: require leases. Otherwise reads are SC.
+Solutions that give leases to quorums -- are still all-acks, but between leases -- like the monty hall problem.
+Yes, there are local lin reads, but what is the actual cost of leasing?
+Slow path transition: through config change, e.g. a Paxos protocol
+Problems: stragglers, big availability penalty.
+
+2. with a leader:
+Simply, elect new leader on suspecting the leader. Better availability but very tricky transition in and out of the slow path. A new leader signals a new epoch and the transition between epochs must be clear.
+What about reads? if the leader reaches all, then it is in the previous category, if not there is no hope of local lin reads. Can you get SC reads by reading locally, only in Zookeeper.
+Performance: not balancing nw and cpu resources
+What about multiple leaders then? If it is lin it is composable and thus possible. Not so fast: partitions have to change ownership, making it even more tricky to transition in and out of slow paths: remember that the availability win is because the leader is not kicked out of the configuration rather it has changed, but with multiple leaders all must be leaders, so when someone is suspected, but turns out to be alive, they must be granted their keys back!! Clients loose the ability to batch and issue requests asynchronously. Skew also an obvious issue
+
+3. No leader: 
+Paxos only slow path. Definitely not a great idea -- horrible with skew! --- but what you see is what you get. Per-key leaders are trivial to implement. 
+
+4. Fast-slow path with zero penalty transition (arbitrarily small timeouts)
+All-aboard paxos: optimization with seamless transition in and out of the slow path! Per-key is a go, but skew still a huge issue!!! 
+
+
+Metrics:
+RTTS? Concurrency? Locality?
+
+
+Consistency, barriers are super useful but what about compositionality?
+
+API: Do you actually need consensus? What is the space? ABD is only slow path, but probably still better than all consenus solutions. Hermes is pretty good for this.
+
+Vector clocks: Once and for all: no RMWS, no W to R, concurrency problems, indefinite buffering issues.
+\end{comment}
+\begin{comment}
+This work focuses \emph{solely} on 
+%distributed systems that solve consensus. More specifically, 
+replicated datastores that implement reads and atomic Read-Modify-Writes (\RMWs).
+%~\footnote{ 
+Crucially, systems that offer \RMWs~must solve consensus.
+%}.
+% Such systems are the backbone of modern online services and as such are ubiquitous in today's world. 
+
+Apart from underlining the importance of such systems, this statement  highlights one more fact: 
+%thousands of software designers all around the world must reason about such systems on a daily basis.% as they have to interface-with or build such systems . 
+%Indeed, 
+the -- once -- niche area of distributed consensus, is today an essential part of the day-to-day operations for thousands of developers. 
+%However, despite its increasing popularity, the nature of the consensus problem remains unforgivingly subtle.
+\end{comment}
+
+}

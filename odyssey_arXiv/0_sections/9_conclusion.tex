@@ -1,0 +1,21 @@
+\section{Conclusion and Lessons Learned}
+\label{sec:conclusion}
+
+The goal of the paper is to uncover the impact of modern hardware on the performance of strongly-consistent replication protocols.
+To this end, we presented \odlib, a framework that enables the fast development and deployment of replication protocols over modern hardware. 
+Over \odlib, we built and evaluated \pnum\ protocols. 
+Extrapolating their results to the entire design space through an informal taxonomy, we provided a characterization of strongly-consistent replication protocols.
+
+On the system side, we experienced first-hand the necessity for a reliable, high-performance framework to design, build and deploy replication protocols. Without it, system-level bugs (networking, KVS etc.) become a black hole for developer time.
+In hindsight, this is no surprise: clean interfaces that abstract orthogonal components have been the cornerstone of computer science. %
+Nevertheless, 
+we were pleasantly surprised to see that we can build and deploy a new protocol in two days (\S\ref{sec:why}). 
+
+When it comes to protocol design, the overarching lesson is that the true limits of a protocol will be uncovered only when all artificially imposed bottlenecks have been removed. 
+Plainly, this calls for highly-optimized, multi-threaded and \RDMA-enabled implementations. 
+It is very telling that ZAB outperforms Classic Paxos (CP) by more than 2x when both are single-threaded, but the result is inverted when they are multi-threaded. 
+The pseudo bottleneck of single-thread implementations conceal ZAB's inefficiencies while holding back CP's capabilities. Multi-threading removes the bottleneck, laying bare the true nature of the protocols.
+
+
+
+

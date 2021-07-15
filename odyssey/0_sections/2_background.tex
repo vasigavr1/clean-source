@@ -1,0 +1,66 @@
+\section{Preliminaries}
+\label{sec:prel}
+
+\begin{comment}
+papers to comment on
+\squishlist
+\item raft,  Viewstamped Replication, ZAB, nsdi fine-grained
+\item mencius, derecho (vritual sychrony?)
+\item allconcur
+\item epaxos, generalized paxos, CASPaxos
+\item quorum leases
+\item cr-craq-primary backup-hermes
+\item abd- dynastore (ABD+ reconfigurations)
+\item Sift: Resource-Efficient Consensus with RDMA
+\item fast reads with leases
+\item Vive La Difference: Paxos vs. Viewstamped Replication vs. Zab
+\item Dare, Sift, Apus, NoPaxos, Netchain
+\squishend
+\end{comment}
+
+% In this section, first we will  briefly discuss replicated Key-Value Stores (KVSes) and their API. Then we describe the consistency guarantees that a strongly-consistent replication protocol must ensure. 
+ 
+\beginbsec{Replicated Key-Value Stores}
+In order to remain available in the face of faults, KVSes are replicated (typically across 3 to 7 machines~\cite{Hunt:2010}). Note that throughout this paper
+the terms machines, servers, nodes and replicas are used interchangeably.
+We assume that clients establish connections with the replicated KVS through \emph{sessions}. 
+The order in which requests appear within a session constitutes the \emph{session order}.
+
+\beginbsec{API} 
+We assume that the KVS provides a Get/Put API, which we refer to as read/write.
+Note that writes can be \emph{conditional}, \ie they can perform an atomic read-modify-write (RMW) action on the key. Conditional writes are fundamentally harder to achieve than regular writes~\cite{Herlihy:2008}.
+% \antonis{Personally I prefer "blind" or "plain" writes to "full" which has meaning only on cache-related environment (?)}
+All of our evaluated protocols can perform conditional writes, except for multi-writer ABD~\cite{Lynch:1997}. 
+%, which is a register-based protocol~\cite{Cachin:2014}.
+
+% The number of machines is configurable; experiments in this paper are on a 5-machine deployment (a typical degree of replication for safety~\cite{Hunt:2010}).  
+% Each machine stores the entire KVS in-memory.
+% In each machine, a number of symmetric software threads called \emph{workers} execute the protocol and maintain the KVS. 
+% A set of client threads (or simply \emph{clients}) are also deployed on each machine. % (unless specified otherwise).
+% Clients establish connections with the workers through \emph{sessions}. 
+% %The order in which requests appear within a session constitute the session order. 
+% Each worker is typically responsible for a number of sessions.
+
+\beginbsec{Consistency}
+The protocols we will evaluate all enforce either one of the following two strong models: 
+Sequential Consistency (SC) or Linearizability (lin).
+% \beginbseceval{Sequential Consistency (SC)} 
+SC mandates that reads and writes (across all keys) from each session appear to take effect in some total order that is consistent with session order~\cite{Lamport:1979}.  
+% To put it succinctly, SC enforces session ordering.
+% \beginbsec{Linearizability (lin)} 
+In addition to SC's constraints, lin mandates that each request appears to take effect instantaneously at some point between its invocation and completion~\cite{Herlihy:1990}. 
+% Thus, lin not only enforces session ordering, but also preserves real-time behavior.
+Note that throughout this paper we will assume the default guarantee to be lin, specifying the few cases where guarantees are downgraded to SC.
+%, we specify 
+
+% \beginbsec{API}
+
+
+
+\begin{comment}
+\subsection{Failure models}
+In this work, we compare protocols that can tolerate crash-stop or network failures.
+In this model, processes may fail by crashing and their operation is non-Byzantine. Additionally, network failures can manifest as either (1) message reordering, duplication and loss, or (2) link failures that may lead to network partitions.
+Within this model, evaluated protocols make different assumptions about synchrony. The stricter restrictions imposed by any protocol is partial synchrony with loosely synchronized clocks (\eg Hermes~\cite{A:2020}). 
+\end{comment}
+

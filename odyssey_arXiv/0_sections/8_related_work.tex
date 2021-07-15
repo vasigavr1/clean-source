@@ -1,0 +1,31 @@
+\section{Related Work}
+\label{sec:related}
+
+\beginbsec{Related Frameworks}
+Similarly to \odlib, 
+Paxi~\cite{Ailijiang:2019} offers a rich interface that enables the fast development of replication protocols. However, Paxi is neither multi-threaded nor \RDMA-enabled.
+eRPC~\cite{Kalia:2019} is a general-purpose networking framework offering \RDMA-based RPCs, similarly to \odlib.
+However, \odlib\ also provides functionality tailored for replication protocols, such as the smart messages (\S\ref{sec:nw:sm}). 
+The reason we did not use eRPC as the networking layer of \odlib, is twofold. 
+First, in eRPC, a broadcast requires a separate memcpy for each of the messages. 
+In our setup that would result in multiple GBytes/s worth of unnecessary memcpying, for almost all protocols.
+Secondly, eRPC would not allow us to use the multicast primitive.
+
+\y{
+Finally, G-DUR~\cite{Ardekani:2014b} is a generic middleware that enables the developers to implement and evaluate a large family of distributed transactional protocols.  %
+G-DUR focuses on providing a substrate for transactional protocols that are based on the Deferred Update Replication (DUR) approach. In contrast, \odlib\ focuses on exploring the impact of modern hardware in strongly-consistent replication protocols.
+}
+
+
+\beginbsec{Analysis of replication protocols}
+Ailijiang \etal~\cite{Ailijiang:2019} dissect the performance of strongly-consistent replication protocols. Their analysis is complimentary to ours, as they focused on latency and availability on wide-area-networks and geo-replication, while we focus on performance within the datacenter and over modern hardware.
+
+\y{
+\beginbsec{Modern Hardware}
+\odlib\ investigates the interplay between protocol-level design decisions and three advances that are described as \emph{modern hardware}: many-core servers, user-level high-bandwidth networking  and high-capacity main memory.
+Notably, Szekeres \etal~\cite{Szekeres:2020} also observe the importance of thread-scalability in the era of user-level networking, and propose the Zero-Coordination Principle a guideline to building thread-scalable replicated transactional storage systems. 
+Furthermore, recent work~\cite{Li:2016-NoPaxos, L1:2020, Zhu:2019, Li:2017, Jin:2017, Jin:2018, Firestone:2018} has investigated the impact of programmable hardware (FPGAs, smart NICs and switches) in deploying storage systems in the datacenter. Such programmable hardware can be used to accelerate the replication protocol. We believe that by uncovering the impact of protocol-level actions on performance our comparison of protocols can serve as a starting point for this endeavor, guiding both the selection of protocols to accelerate and the acceleration process itself.
+
+
+}
+\input{0_sections/7_discussion}

@@ -1,0 +1,241 @@
+\begin{table}[t]
+\centering
+% \footnotesize
+ \resizebox{0.48\textwidth}{!}{%
+\begin{tabular}{c|c|c|c|c|c|c|c|||c|c|c|c|c|}
+% \hline
+\hhline{~-----------}
+& \multicolumn{7}{c|||}{\colorhl\textbf{ Throughput vs. Write ratio}} &
+\multicolumn{4}{c|}{\colorhl\textbf{ Latency vs. Load}}
+ \\ 
+ \hhline{~-----------}
+
+
+\textbf{}                                                               
+%\begin{tabular}[c]{@{}c@{}}write\\ ratio \end{tabular}
+& 
+ \colorhl%\textbf
+{0\%} &
+ \colorhl%\textbf
+{1\%} &
+ \colorhl%\textbf
+{5\%} &
+ \colorhl%\textbf
+{20\%}&
+ \colorhl%\textbf
+{50\%}&
+ \colorhl%\textbf
+{75\%}&
+ \colorhl%\textbf
+{100\%} & 
+
+ \colorhl%\textbf
+{25\%} &
+ \colorhl%\textbf
+{50\%} &
+ \colorhl%\textbf
+{75\%} &
+ \colorhl%\textbf
+{100\%}
+\\  
+\hhline{~-----------}
+\hline
+
+
+
+%%%%%%%%%%
+
+\multicolumn{1}{|c|}{\colorhl ZAB} &
+967 &	276 &	102 &	47 &	23.5 &	16.5 &	14 
+& 
+22 / 16 & 
+30 / 23 & 
+40 / 32 & 
+110 / 95
+ \\ \hline \hline
+ %%%%%%%%%%
+ \greyrow
+\multicolumn{1}{|c|}{\colorhl MP} &
+170 &	100 &	51 &	33 &	22 &	16 &	14 
+&
+22 / 16 & 
+30 / 23 & 
+40 / 32 & 
+110 / 95
+ \\ \hline \hline
+ %%%%%%%%%%
+\multicolumn{1}{|c|}{\colorhl Derecho} &
+967 &	445 &	235 &	79 &	33 &	22 &	16.6 
+&
+16 / 13 & 
+24 / 19 & 
+32 / 27 & 
+94 / 86
+ \\ \hline \hline
+ %%%%%%%%%%
+ \greyrow
+  \multicolumn{1}{|c|}{\colorhl CP} &
+125 &	115 &	90 &	65 &	44 &	35 &	27 
+&
+38 / 26 & 
+40 / 33 & 
+56 / 47 & 
+216 / 163
+ \\ \hline \hline
+ %%%%%%%%%%
+\multicolumn{1}{|c|}{\colorhl CHT} &
+967 &	755 &	520 &	134 &	53 &	36 &	28 
+&16 / 16 & 
+24 / 19 & 
+38 / 31 & 
+282 / 209
+ \\ \hline \hline
+  %%%%%%%%%%
+ \greyrow
+\multicolumn{1}{|c|}{\colorhl All-Aboard} &
+125 &	116 &	92 &	70 &	51 &	42 &	39 
+&
+24 / 18 & 
+38 / 27 & 
+58 / 40 & 
+252 / 167
+ \\ \hline \hline
+ %%%%%%%%%%
+\multicolumn{1}{|c|}{\colorhl ABD} &
+125 &	118 &	102 &	84 &	71 &	64 &	61 
+&
+28 / 26 & 
+34 / 33 & 
+52 / 47 & 
+138 / 163
+ \\ \hline \hline
+ %%%%%%%%%%
+ \greyrow
+ \multicolumn{1}{|c|}{\colorhl CRAQ} &
+967 &	739 &	476 &	246 &	123 &	87 &	67 
+&
+34 / 22 & 
+48 / 30 & 
+58 / 37 & 
+242 / 138
+ \\ \hline \hline
+ %%%%%%%%%%
+\multicolumn{1}{|c|}{\colorhl CHT-multi-ldr} &
+967 &	674 &	443 &	192 &	134 &	97 &	76
+&30 / 19 & 
+82 / 58 & 
+86 / 59 & 
+554 / 323
+
+ \\ \hline \hline
+ %%%%%%%%%%
+ \greyrow
+\multicolumn{1}{|c|}{\colorhl CHT-mcast} &
+967 &	745 &	524 &	277 &	145 &	105 &	85 
+&
+20 / 14 & 
+24 / 16 & 
+40 / 26 & 
+210 / 147
+ \\ \hline \hline
+ %%%%%%%%%%
+
+\multicolumn{1}{|c|}{\colorhl Hermes} &
+967 &	735 &	515 &	275 &	150 &	107 &	89 
+& 18 / 13 & 
+24 / 15 & 
+36 / 22 & 
+110 / 78 
+ \\ \hline 
+ %%%%%%%%%%
+
+
+\end{tabular}%
+ }
+\caption{Left-hand side: Throughput in M.reqs/s varying the write ratio. Right-hand side: 99th percentile and average latency (99th/ avg) in $\mu$seconds varying the load in a write-only workload.}
+\vspace{-1.5em}
+\label{tab:all-perf}
+\end{table}
+
+
+% \begin{table}[t]
+% \centering
+% % \footnotesize
+%  \resizebox{0.38\textwidth}{!}{%
+% \begin{tabular}{c|c|c|c|c|}
+% % \hline
+% \hhline{~----}
+% \textbf{}                                                               
+% %\begin{tabular}[c]{@{}c@{}}write\\ ratio \end{tabular}
+% & 
+%  \colorhl\textbf
+% {25\%} &
+%  \colorhl\textbf
+% {50\%} &
+%  \colorhl\textbf
+% {75\%} &
+%  \colorhl\textbf
+% {100\%}
+% \\  \hline
+% %%%%%%%%%%
+
+% \multicolumn{1}{|c|}{\colorhl ZAB} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+%  \greyrow
+% \multicolumn{1}{|c|}{\colorhl MP} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+% \multicolumn{1}{|c|}{\colorhl Derecho} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+%  \greyrow
+%   \multicolumn{1}{|c|}{\colorhl CP} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+% \multicolumn{1}{|c|}{\colorhl CHT} &
+
+%  \\ \hline \hline
+%   %%%%%%%%%%
+%  \greyrow
+% \multicolumn{1}{|c|}{\colorhl All-Aboard} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+% \multicolumn{1}{|c|}{\colorhl ABD} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+%  \greyrow
+%  \multicolumn{1}{|c|}{\colorhl CRAQ} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+% \multicolumn{1}{|c|}{\colorhl CHT-multi-ldr} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+%  \greyrow
+% \multicolumn{1}{|c|}{\colorhl CHT-mcast} &
+
+%  \\ \hline \hline
+%  %%%%%%%%%%
+
+% \multicolumn{1}{|c|}{\colorhl Hermes} &
+% 18 / 13 & 
+% 24 / 15 & 
+% 36 / 22 & 
+% 110 / 78 
+%  \\ \hline 
+%  %%%%%%%%%%
+% \end{tabular}%
+%  }
+% \caption{99th percentile and average latency (99the/ avg) in useconds for 25\% 50\%, 75\% and 100\% load in a write-only workload.}
+% \label{tab:all-lat}
+% \end{table}
+
+

@@ -1,0 +1,30 @@
+\section{Preliminaries}
+\label{sec:prel}
+
+
+
+ 
+\beginbsec{Replicated Key-Value Stores}
+In order to remain available in the face of faults, KVSes are replicated (typically across 3 to 7 machines~\cite{Hunt:2010}). Note that throughout this paper
+the terms machines, servers, nodes and replicas are used interchangeably.
+We assume that clients establish connections with the replicated KVS through \emph{sessions}. 
+The order in which requests appear within a session constitutes the \emph{session order}.
+
+\beginbsec{API} 
+We assume that the KVS provides a Get/Put API, which we refer to as read/write.
+Note that writes can be \emph{conditional}, \ie they can perform an atomic read-modify-write (RMW) action on the key. Conditional writes are fundamentally harder to achieve than regular writes~\cite{Herlihy:2008}.
+All of our evaluated protocols can perform conditional writes, except for multi-writer ABD~\cite{Lynch:1997}. 
+
+
+\beginbsec{Consistency}
+The protocols we will evaluate all enforce either one of the following two strong models: 
+Sequential Consistency (SC) or Linearizability (lin).
+SC mandates that reads and writes (across all keys) from each session appear to take effect in some total order that is consistent with session order~\cite{Lamport:1979}.  
+In addition to SC's constraints, lin mandates that each request appears to take effect instantaneously at some point between its invocation and completion~\cite{Herlihy:1990}. 
+Note that throughout this paper we will assume the default guarantee to be lin, specifying the few cases where guarantees are downgraded to SC.
+
+
+
+
+
+

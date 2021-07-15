@@ -1,0 +1,180 @@
+\section{\odlib}
+\label{sec:od}
+
+
+In this section, we 
+describe \odlib, a framework that allows developers to easily design, measure and deploy replication protocols over modern hardware.
+Specifically, \odlib~contains libraries to perform, among other things, the following:
+create and pin software threads, initialize and interface with the KVS, initialize RDMA data structures, exchange \RDMA~metadata to connect the servers, send and receive \RDMA~messages, initialize and use the \RDMA~multicast primitive, detect failures and maintain the configuration, specify and implement the read/write API (or create traces for benchmarking) and finally measure the performance of the system. %
+
+All \pnum~of our protocols are implemented over \odlib.
+Therefore, describing \odlib~serves a dual purpose: presenting implementation details of our evaluated protocols and describing how \odlib~can be used by the community to design and deploy new protocols.
+
+In the rest of this section we first describe the utility of \odlib\ (\S\ref{sec:why}), and then focus on its three basic components: the threading model (\S\ref{sec:ex-mod}), the Key-Value Store layer (\S\ref{sec:kvs}) and the networking layer (\S\ref{sec:nw}).
+
+\subsection{Utility of \odlib}\label{sec:why}
+
+The utility of \odlib~is twofold. Firstly, for the purposes of this paper, it allows us to compare strongly-consistent replication protocols over modern hardware.
+Secondly, once open-sourced, \odlib\ can be used to develop new (or old) protocols over modern hardware.
+Below, we elaborate on why \odlib\ is necessary to achieve either of these goals.
+
+
+\beginbsec{Protocol comparison}
+\odlib\ facilitates an apples-to-ap\-ples comparison between strongly-consistent replication protocols over modern hardware:
+all our protocols use the same threading model, underlying KVS and networking patterns and optimizations.
+However, it is not enough for the comparison to be fair; it must also be meaningful. For that, protocols must be able to stress modern hardware to its limits. Only then will the protocol inefficiencies be exposed.
+For instance, \figref{fig:single-thr}, orders our \pnum\ protocols by their single-threaded performance;
+this order changes drastically when multi-threading them in \figref{fig:write-all}. 
+This is because multi-threading stresses the hardware, which in turn exposes protocol pathologies. %
+The need to stress the hardware necessitates a framework, such as \odlib, that targets multi-threaded, \RDMA-enabled, in-memory KVSes.
+
+
+\beginbsec{Development of new protocols}
+The second purpose of \odlib\ is to accelerate the development and deployment of replication protocols over modern hardware.
+Note that in most of our protocols 80 to 90\% of the codebase is devoted to tasks such as %
+setting up and using the KVS and the RDMA networking.
+The challenge is that, while orthogonal to protocol design, these tasks 
+require intimate domain-specific knowledge.
+
+To get a taste of what this knowledge entails, let us look at a specific example of a commonly occurring error when using RDMA.
+Assume that an \RDMA~message that appears to have been transmitted is never received.
+Also assume 
+the developer is wise enough to check the hardware counters and detects that \emph{req\_cqe\_error} has been incremented.
+In that case, the developer must know from experience that the most likely cause for this error is attempting to send a message from a memory location that has not been registered with the NIC. Absent that intimate knowledge of the RDMA universe, the developer would have to make due
+with the manual's enigmatic explanation, that a \qt{completion queue event has completed with an error}~\cite{Mellanox:2020}.
+
+\odlib\ frees the developer from all that cumbersome complexity allowing them to focus solely on the protocol. Under the hood, \odlib\ uses best practices and optimizations from different domains
+to maximize performance.
+
+To get a better sense of \odlib's utility, let us consider a concrete example in the form of 
+Hermes over \odlib.  Was development accelerated? It took one developer less than 2 working days to develop and test our \odlib-based Hermes. Did \odlib\ practices help performance?
+Our \odlib-based Hermes enjoys a 20\% increase in write throughput, compared to the open-sourced version. We attribute the increase to \odlib's \emph{smart messages} (explained in \secref{sec:nw:sm}).
+
+
+
+
+
+
+
+
+
+
+
+\subsection{\odlib~Threading model}\label{sec:ex-mod}
+
+
+Multi-threading is a necessary step to harness the inherent parallelism in modern hardware. Here we describe how it is implemented in \odlib.
+
+\odlib~sets up a number of threads called \emph{workers} and a number of threads called \emph{clients}. 
+Clients establish connections with the workers through \emph{sessions}. 
+Each session represents an entity (\eg an external client, or an application thread), which issues requests (reads and writes) to the system.
+Each worker is typically responsible for a number of sessions. 
+Workers are independent from each other: a worker completes each request in isolation and reports completion 
+to the corresponding client. 
+The order in which requests appear within a session constitutes the \emph{session order}. 
+Requests are always executed in session order.
+
+This execution model allows \odlib~to uncover all available parallelism across unrelated requests, \ie \emph{request-level parallelism}. This is necessary in order to take advantage of the ample parallelism in today's modern hardware.
+Specifically, an \odlib-based protocol may be working on thousands of request at any given moment, by uncovering
+the thread-level parallelism across worker threads, 
+and the ses\-sion-level parallelism within a worker thread (as every worker is typically responsible for multiple sessions).
+
+\beginbsec{Developer effort} 
+Threads are spawned and pinned transparently to the developer.
+The developer specifies how many workers and clients are required and provides details on the system's resources, so \odlib~knows how to pin the threads.
+
+
+\subsection{\odlib~Key-Value Store} \label{sec:kvs}
+
+\odlib~sets up an in-memory KVS in each node, 
+leveraging the memory capabilities of modern hardware.
+The KVS is largely based on MICA~\cite{Lim:2014}, (as found in~\cite{Kalia:2014}), a state-of-the-art in-memory KVS tailored for high performance. We enhance MICA with sequence locks (seqlocks)~\cite{Lameter:2005} 
+to allow for concurrency control. Seqlocks allow reads to execute in a lock-free manner; writers must spin on the lock variable.
+
+The challenge in providing a KVS as a library is that different protocols may have different requirements from the metadata stored along with each key. 
+Some protocols may simply wish to read/write the value, but other protocols may require to read/write additional metadata. 
+For example, when executing CP, upon receiving a \emph{propose} message we may need to transition the state of the key to \emph{proposed}.
+
+
+\beginbsec{Developer effort} 
+\odlib~allows the developer to specify their own data structure to be stored in the value of a key-value pair. 
+Furthermore, the developer must also specify 
+the necessary handlers to process application-specific requests to the KVS. These handlers can be registered with \odlib~to be called on receiving a message.
+
+
+\subsection{\odlib~Networking} \label{sec:nw}
+The third core component of \odlib\ is its networking layer which  allows it to leverage modern RDMA-enabled networks. 
+In this section, we we first provide an overview of the networking decisions and the effort required by the developer to use the \odlib~networking library (\S\ref{sec:nw:ov}). Then we look at generic optimizations that are enabled by default (\S\ref{sec:nw:opt}), and finally we describe two useful pieces of functionality that the developer can leverage: smart messages (\S\ref{sec:nw:sm}) and hardware multicast (\S\ref{sec:nw:mcast}).
+
+\subsubsection{Networking Overview} \label{sec:nw:ov}
+
+
+\odlib\ adopts the Remote Procedure Call (RPC) paradigm over UD Sends. Researchers have extensively proven that this paradigm comprises the most efficient and practical design point for modern RDMA-capable networks~\cite{Kalia:2014, Kalia:2016, F-Kalia:2016, Kalia:2019}.
+Below we provide an overview of how the networking layer is initialized and how it can be used to exchange messages.
+
+\beginbsec{Developer effort -- initialization}
+The developer must specify the number and the nature of the logical message flows they require.
+In RDMA parlance each flow corresponds to one \emph{queue pair} (QP), \ie a send and a receive queue. 
+For instance, consider  Hermes  where a write requires two broadcast rounds: invalidations (invs) and validations (vals).
+Each worker in each node sets up three QPs:  1) to send and receive invs, 2) to send and receive acks (for the invs) and 3) to send and receive vals.
+Splitting the communication in message flows is the responsibility of the developer. To create the QP for each message flow, the developer simply calls a \odlib~function, passing details about the nature of the QP. %
+
+
+\beginbsec{Developer effort -- send and receive}
+For each QP, \odlib\ maintains a send-FIFO and a receive-FIFO.
+Sending requires that the developer first inserts messages in the send-FIFO via an \odlib~insert function; later they can call a send function to trigger the sending of all inserted messages.
+To receive messages, the developer need only call an \odlib~function that polls the receive-FIFO. 
+Notably, the developer can specify and register handlers to be called when calling any one of the \odlib~functions. 
+Therefore, the \odlib~polling function will deliver the incoming messages, if any, to the developer-specified handler.
+
+
+\subsubsection{Optimizations} \label{sec:nw:opt}
+
+Let us now overview the networking optimizations that are employed by default in \odlib.
+Firstly, we limit each worker to communicate with only a single worker in every remote machine. 
+This restriction has been shown to substantially increase performance by reducing the pressure on NIC's hardware (caches and TLB) caused by networking metadata~\cite{A&V:2018}.
+
+Furthermore, \odlib\ will always batch messages in the same network packet when given the opportunity. Batching more than doubles the performance when messages are small~\cite{A&V:2018} by amortizing all costs associated with sending a single packet (\ie the packet header, DMA transactions, computation in the CPU, NIC and switch etc.).
+
+Finally, we carefully implement low-level, well-established \RDMA~practices such as doorbell batching, inlining and batched selective signaling. We refer the reader to~\cite{Barak:2013, Kalia:2016} for more details on these optimizations.
+
+\subsubsection{Smart Messages}\label{sec:nw:sm}
+
+In this section, we describe \odlib's smart messages, \ie an implementation of acknowledgements (dubbed \emph{smart-acks}) and commit messages (dubbed \emph{smart-coms}) that can be readily used by the developer. 
+
+\beginbsec{Smart-acks}
+A smart-ack acknowledges receiving multiple messages with a fixed-size payload as long as the received messages have consecutive ids.
+Specifically, a smart-ack specifies 1) the first message-id it acks and 2) the number of consecutive message-ids it acks.
+
+We call them \qt{smart} because instead of sending an ack message for every received message, they batch multiple acks while keeping the payload fixed.  The batching is opportunistic, that is, it never waits to fill a quota. In practice however, smart-acks always carry a batch because batching is used in all messages, and thus there is always a batch of messages to be acked. 
+
+\beginbsec{Smart-coms}
+The idea is the same: smart-coms commit multiple writes with a fixed payload, as long as the writes have consecutive ids. 
+Notably, smart-coms and smart-acks have great synergy, as commits are often sent after receiving acks.
+
+\beginbsec{Developer effort}
+The developer needs to make sure that messages are tagged with monotonically increasing ids. In return, they avoid the effort of implementing acks and commits. Instead, they need only call the \odlib~functions to create and send the smart messages.
+
+\custvspace
+We have found smart messages to be extremely useful: we have smart-acks in all \pnum~of our protocols, and smart-coms in six of them. 
+Besides boosting performance, smart messages significantly accelerate the time to build a protocol.
+
+
+
+
+\subsubsection{Hardware Multicast} \label{sec:nw:mcast}
+
+Most replication protocols require broadcasting messages in order to communicate a new write to all replicas. 
+Broadcasts are implemented in \odlib~through unicasts.
+However, Infiniband switches can perform a hardware-assisted multicast~\cite{Barak:2015}, where the sender 
+transmits a single packet and the switch then replicates it and propagates it to all recipients. A packet always specifies the multicast-group-id that it must be transmitted to.
+To receive a multicast, nodes must register in the corresponding multicast group in the switch. 
+
+\odlib~contains a multicast library that will be used under the hood, if the developer specifies that a QP should use the multicast primitive. 
+In \secref{sec:ev},  we investigate the types of protocols that can benefit from the hardware multicast.
+As far as we know, \odlib\ is the first framework to offer access to the \RDMA\ multicast.
+
+
+
+ 
+

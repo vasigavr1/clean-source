@@ -1,0 +1,90 @@
+\begin{table}[t]
+\centering
+\resizebox{0.48\textwidth}{!}{%
+\begin{tabular}{c|c|c|}
+\hhline{~--} %
+& 
+\colorhl
+\begin{tabular}[c]{@{}c@{}}
+
+\textbf{Total order}
+
+\end{tabular}      
+& 
+\colorhl
+\begin{tabular}[c]{@{}c@{}}
+\textbf{Per key order} \\ 
+
+\end{tabular}
+\\ \hline
+
+\multicolumn{1}{|c|}{
+\colorhl \textbf{
+\begin{tabular}[c]{@{}c@{}}
+Leader-\\ based 
+\end{tabular} }}  & 
+\begin{tabular}[c]{@{}c@{}}
+    
+    \textbf{Multi-Paxos}~\cite{Lamport:2001},
+    \textbf{ZAB}~\cite{Hunt:2010, Reed:2008},\\
+    VR~\cite{Oki:1988}, APUS~\cite{Wang:2017},
+    DARE~\cite{Poke:2015},\\
+    Raft~\cite{Ongaro:2014},
+    Fast Paxos~\cite{Lamport:2006}
+\end{tabular}
+& 
+
+\begin{tabular}[c]{@{}c@{}}  
+    \textbf{CHT}~\cite{Chandra:2016},
+    FGSMR~\cite{Liu:2020}, \\
+    WPaxos~\cite{Ailijiang:2020}, 
+    Primary-backup~\cite{Alsberg:1976},\\
+    CR~\cite{VanRenesse:2004},
+    \textbf{CRAQ}~\cite{Terrace:2009},
+\end{tabular}                                                                                                                                                                                                \\ \hline
+\multicolumn{1}{|c|}{
+\colorhl \textbf{\begin{tabular}[c]{@{}c@{}}
+Decentralized \\ (Leaderless)
+\end{tabular}}}
+& 
+
+\begin{tabular}[c]{@{}c@{}}
+Mencius~\cite{Mao:2008},
+    \textbf{Derecho}~\cite{Jha:2019},\\
+    AllConcur~\cite{Poke:2017}
+\end{tabular}
+& 
+\begin{tabular}[c]{@{}c@{}}
+\textbf{CP}~\cite{Lamport:1998},
+RMW-Paxos\cite{Skrzypczak:2020},\\
+CASPaxos\cite{Rystsov:2018}
+ Gryff~\cite{Burke:2020},\\
+ Generalized Paxos~\cite{Lamport:2005}, 
+ EPaxos~\cite{Moraru:2013},\\
+ 
+ Atlas~\cite{Enes:2020},
+ \textbf{All-aboard Paxos}~\cite{Howard:2019} \\
+ \textbf{ABD~\cite{Lynch:1997}}, 
+ \textbf{Hermes}~\cite{A:2020} \\
+\end{tabular} 
+
+\\ \hline
+\end{tabular}%
+
+
+
+
+}
+\caption{Taxonomy (implemented protocols are in bold)}
+\label{tab:tax}
+\end{table}
+
+
+
+
+
+
+ 
+
+
+

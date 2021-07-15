@@ -1,0 +1,68 @@
+
+% \label{sec:discussion}
+\y{
+\beginbsec{Skewed workloads}
+Our evaluation does not investigate the sensitivity of replication protocols under a skewed workload (\eg zipfian distribution~\cite{Novakovic:2016}). This is not an oversight. 
+
+It is possible to apply an optimization where reads and writes to the most popular keys (\ie the \qt{hot keys}) can be combined within each server by leveraging the fact that: 1) 
+a server can efficiently keep track of the hot keys~\cite{S-Li:2016, Metwally:2005, Cormode:2008} and 2) at any given moment, a server is expected to be working on multiple requests for each of the hot keys.
+% seeing as at any given moment, a server is expected to be working on multiple requests for each of the most popular objects, which it can efficiently keep track  Keeping track of the hottest objects   is ~\cite{S-Li:2016, Metwally:2005, Cormode:2008}
+This optimization turns skew from problem to opportunity. This is not a surprise: researches have repeatedly observed that skew is a form of locality, and as such it can be leveraged to increase performance~\cite{Priyank:2019,S-Li:2016, A&V:2018, L1:2020}.
+% This optimization turns skew from problem to opportunity and is equally applicable to all \pnum\ protocols.
+
+Notably, the optimization is equally applicable to all \pnum\ protocols.
+Consequently, 
+% On the one hand, 
+evaluating the protocols without the optimization would paint a false picture, suggesting that protocols suffer under skew, when in reality they can thrive under it. 
+However, 
+% On the other hand,
+%adding the optimization to all \pnum\ protocols merits its own dedicated paper, as
+the optimization will take a different shape for each protocol. Therefore, incorporating the optimization to all \pnum\ protocols will require substantial research  
+%Such research effort is not within the scope of this paper which focuses on exploring the interplay between protocol-level design decisions and modern hardware.
+and we leave it for future work.
+% For completeness, we briefly describe the optimization below.
+
+
+% For this reason, we believe that the investigation of the sensitivity of replication protocol to skew, merits its own dedicated paper. 
+% Therefore, we select to exclude skew from our study, focusing instead on the interplay between protocol-level design decisions and modern hardware. 
+
+}
+\begin{comment}
+
+
+\beginbsec{Optimization}
+Assume a configuration where in each server there are 20 workers running 50 sessions each. At any given time a server can be executing up to a thousand requests. From a consistency standpoint these requests are completely \emph{independent}, as they originate from different sessions.
+Under a zipfian distribution, a substantial percentage of these requests will access only a handful of the keys, \ie the hottest ones. As a rule of thumb, in a KVS that stores a million keys, under a zipfian distribution with $\alpha = 0.99$, (a typical number~\cite{Dragojevic:2014, Hong:2013, Novakovic:2019}) roughly 16\% of accesses refer to the 20 hottest keys.
+Furthermore, a number of efficient techniques can be used to identify and keep track of the hottest keys with very low overhead~\cite{S-Li:2016, Metwally:2005, Cormode:2008}.
+Therefore, it is possible for a server to combine independent requests to the hottest objects. For example, assume that 16\% of accesses refer to the 20 hottest keys and a server runs a thousand unrelated requests. The server can combine 160 of the requests -- those to the 20 hottest keys -- in only 20, one for each key.
+Consistency will not be violated because the requests are independent, as they come from different sessions.
+
+% We prototyped this optimization in Hermes to gauge its potential. With the optimization and found out that it can increase the performance
+
+% Applying this optimization turns skew from problem to opportunity. This is not a surprise: skew is a form of locality, an insight which researches have repeatedly leverage  to turn skew into an advantage~\cite{Priyank:2019,S-Li:2016, A&V:2018, L1:2020}.
+\end{comment}
+
+
+
+
+\begin{comment}
+\subsection{Why not skew?}
+
+We strongly believe that skew merits a separate, dedicated paper. Here is why.
+
+A protocol-level optimization that Hermes employs (coalescing writes/reads to hot keys across servers) turns skew from problem to opportunity. This optimization should be equally applicable to all ten protocols.
+
+On the one hand, evaluating the protocols without the optimization would paint a false picture. On the other hand adding the optimization to all ten protocols will require significant research/engineering as the optimization will take a different shape for each protocol.
+
+
+Because protocols can be optimized to leverage skew.
+Any server will be executing thousands of RMWs any given point.
+With skew a substantial percentage of them will be for the most popular data item.
+What's to stop the server from coalescing the RMWs, and execute 10s or hundreds of RMWs, by simply executing one?
+Absent such optimizations, the conclusions drawn from skewed workloads will not be as useful.
+
+\subsection{Why throughput?}
+Throughput shows the load a system can handle.
+It also says a lot about latency: it describes under what load a system will have low latency.
+\end{comment}
+

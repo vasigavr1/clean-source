@@ -1,0 +1,58 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+
+\begin{table}[t]
+\centering
+% \footnotesize
+% \resizebox{\textwidth}{!}{%
+\begin{tabular}{c|c|c|c|c|c|c|c|}
+%\hline
+\hhline{~-------}
+\textbf{}                                                               
+%\begin{tabular}[c]{@{}c@{}}write\\ ratio \end{tabular}
+& 
+ \colorhl\textbf
+{0\%} &
+ \colorhl\textbf
+{1\%} &
+ \colorhl\textbf
+{5\%} &
+ \colorhl\textbf
+{20\%}&
+ \colorhl\textbf
+{50\%}&
+ \colorhl\textbf
+{75\%}&
+ \colorhl\textbf
+{100\%}
+\\ \hline
+%%%%%%%%%%
+\multicolumn{1}{|c|}{
+\colorhl\textbf{ZAB}} & 
+\colorgrey\textit{967} & 
+\colorgrey\textit{276}  &
+\colorgrey\textit{102}  & 
+\colorgrey\textit{47}  & 
+\colorgrey\textit{23.5}  & 
+\colorgrey\textit{16.5}  & 
+\colorgrey\textit{14}  
+\\ \hline
+%%%%%%%%%%
+\multicolumn{1}{|c|}{
+\colorhl\textbf{MP}} & 
+\colorgrey\textit{170} & 
+\colorgrey\textit{100}  &
+\colorgrey\textit{51}  & 
+\colorgrey\textit{33}  & 
+\colorgrey\textit{22}  & 
+\colorgrey\textit{16}  & 
+\colorgrey\textit{14}  
+\\ \hline
+%%%%%%%%%%
+\end{tabular}%
+% }
+\caption{Throughput in mreqs of ZAB \& MP, varying the write ratio}%~(assuming $\gltsyn$ is not an rf-edge).}
+\label{tab:zab-perf}
+\end{table}

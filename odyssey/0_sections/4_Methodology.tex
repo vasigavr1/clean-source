@@ -1,0 +1,20 @@
+\section{Infrastructure and workload}
+\label{sec:meth}
+
+% In this section we describe several parameters of our experiments.
+
+% \beginbsec{Infrastructure}
+We conduct our experiments on a cluster of 5 servers interconnected via a 12-port Infiniband switch (Mellanox MSX6012F-BS). Each machine runs Ubuntu 18.04 and is equipped with two 10-core CPUs (Intel Xeon E5-2630v4) with two hardware threads per core, reaching a total of 40 hardware threads. 
+Furthermore each machine has 64 GB of system memory and a single-port 56Gb Infiniband NIC (Mellanox MCX455A-FCAT PCIe-gen3 x16). % connected on socket 0. 
+% Each CPU has 25 MB of L3 cache and two hardware threads per core.
+We disable turbo-boost, pin threads to cores and use huge pages (2 MB) for the KVS. 
+
+% \beginbsec{Workload}
+Our experiments use a uniform read/write trace, which is created on each run and is kept in-memory.
+The KVS consists of one million key-value pairs, which are replicated in all nodes. We use keys and values of $8$ and $32$ bytes, respectively. 
+%The requests are issued from the client threads over the async API.
+
+
+\begin{comment}
+The availability penalty need not be as big in this case, because the cost of a false positive is not as big: on a timeout, the leader is not removed from the configuration, but rather only voted out. 
+\end{comment}

@@ -1,0 +1,207 @@
+%%%%%%%%%%%%%%%%%%%%%%
+% Comments
+%%%%%%%%%%%%%%%%%%%%%%
+\newif\ifshowcomment
+\showcommenttrue
+% \showcommentfalse
+
+\ifshowcomment
+
+\newcommand{\todo}[1]{\noindent\textsf{\color{NavyBlue}{[{{\bf \scalebox{0.75}{\fbox{ToDo}}}: {\it#1}]}}}}
+\newcommand{\newtext}[1]{\textcolor{blue}{#1}} % Added new texts
+\newcommand{\modtext}[1]{\textcolor{red}{#1}}  % Modified texts
+\newcommand{\boris}[1]{\noindent\textsf{\color{Violet}{[{{\bf \scalebox{0.75}{\fbox{Boris}}}: {\it#1}]}}}}
+\newcommand{\vijay}[1]{\noindent\textsf{\color{purple}{[{{\bf \scalebox{0.75}{\fbox{Vijay}}}: {\it#1}]}}}}
+\newcommand{\vasilis}[1]{\noindent\textsf{\color{orange}{[{{\bf \scalebox{0.75}{\fbox{Vasilis}}}: {\it#1}]}}}}
+\newcommand{\arpit}[1]{\noindent\textsf{\color{magenta}{[{{\bf \scalebox{0.75}{\fbox{Arpit}}}: {\it#1}]}}}}
+\newcommand{\antonis}[1]{\noindent\textsf{\color{OliveGreen}{[{{\bf \scalebox{0.75}{\fbox{Antonis}}}: {\it#1}]}}}}
+
+\else
+\newcommand{\newtext}[1]{#1} 
+\newcommand{\modtext}[1]{#1}
+\newcommand{\todo}[1]{}
+\newcommand{\antonis}[1]{}
+\newcommand{\boris}[1]{}
+\newcommand{\vijay}[1]{}
+\newcommand{\arpit}[1]{}
+\newcommand{\vasilis}[1]{}
+\fi
+
+\newcommand{\y}[1]{#1}
+% \newcommand{\y}[1]{{\color{blue} #1}\normalcolor}
+% \newcommand{\y}[1]{{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CUSTOM COMMANDS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+% Emphasized space-efficient bullets start
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\beginitem}[1]{\noindent $\succ$ \textit{#1}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+% Floor and ceiling commands
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+
+%%%%%%%%%%%%%%%%%%%%%%
+% Make full capitalized words less intrusive
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\CAP}[1]{\scalebox{0.85}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%
+% circled character
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Squish lists
+%% Usage: 
+%%   \squishlist
+%%     \item ..
+%%   \squishend
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\squishlist}{
+ \begin{list}{$\bullet$}
+  { \setlength{\itemsep}{2pt}
+     \setlength{\parsep}{0pt}
+     \setlength{\topsep}{2pt}
+     \setlength{\partopsep}{0pt}
+     \setlength{\leftmargin}{1em}
+     \setlength{\labelwidth}{1em}
+     \setlength{\labelsep}{0.5em} } 
+}
+
+\newcommand{\squishlistContrib}{ %
+ \begin{list}{$\bullet$}
+  { \setlength{\itemsep}{2pt}
+     \setlength{\parsep}{0pt}
+     \setlength{\topsep}{2pt}
+     \setlength{\partopsep}{0pt}
+     \setlength{\leftmargin}{1em}
+     \setlength{\labelwidth}{1em}
+     \setlength{\labelsep}{0.5em} }
+}
+\newcommand{\squishend}{ \end{list}  }
+
+
+\newcommand{\squishenum}{\begin{enumerate}[itemsep=0.5pt,parsep=0pt,topsep=0pt,partopsep=0pt,leftmargin=1.5em,labelwidth=1em,labelsep=0.5em]{}}
+\newcommand{\squishenumend}{\end{enumerate}}
+
+
+%%% URLs
+\newcommand\myurl[2]{\url{#1}}
+
+\renewcommand{\floatpagefraction}{0.95}
+
+\newcommand{\captionfonts}{\small}
+\makeatletter  % Allow the use of @ in command names
+\long\def\@makecaption#1#2{%
+  \vskip 0.1in
+  \sbox\@tempboxa{{\captionfonts #1: #2}}%
+  \ifdim \wd\@tempboxa >\hsize
+    {\captionfonts #1: #2\par}
+  \else
+    \hbox to\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip 0in}
+\makeatother   % Cancel the effect of \makeatletter
+
+% Theorems
+\newtheorem{mydefinition}{Definition}
+\newtheorem{mytheorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+
+%%% Alignment
+%\begin{center/flushright/flushleft}
+%...
+%\end{center/flushright/flushleft}
+
+
+%% Margins
+%  \usepackage[margin=0.5in]{geometry}
+
+%%% Paragraphs and other breaks
+% Paragraphs are separated by a blank line.
+% You can force a new line using \\
+% To force a new page, use \newpage or \clearpage
+
+%%%% Other spacing
+% Force a space using ∼
+% Add space using \hspace{1in} or \vspace{1in}
+% Fill space using \hfill or \vfill
+
+\def\colorhl{\cellcolor[HTML]{C0C0C0}}
+\def\hlrow{\rowcolor[HTML]{C0C0C0}}
+\def\colorgrey{\cellcolor[HTML]{e6e6e6}}
+\def\greyrow{\rowcolor[HTML]{e6e6e6}}
+\def\custvspace{\vspace{0.4em}}
+\newcommand{\qt}[1]{``#1''}
+\def\colorhl{\cellcolor[HTML]{C0C0C0}} % highlight a the top cells of a table
+
+%%%%%%%%%%%%%%%%%%%%%%
+% Instead of using sub-subsections 
+% use the following as an emphasized 
+% first sentence of a new paragraph
+%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\beginbsec}[1]{\custvspace\noindent\textbf{#1.}}
+
+\def\custevalvspace{\vspace{0.3em}}
+\newcommand{\beginbseceval}[1]{\custevalvspace\noindent\textbf{$\succ$ #1.}}
+
+\def\RDMA{RDMA}
+\def\RMW{RMW}
+\def\RMWs{RMWs}
+\def\odlib{\emph{Odys\-sey}}
+\def\pnum{ten}
+
+\def\LTO{LTO}
+\def\LPKO{LPKO}
+\def\DTO{DTO}
+\def\DPKO{DPKO}
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
+%%%%%%%%%%%%%%%%%%%%
+%%%% Latin Abbreviations 
+%%%%%%%%%%%%%%%%%%%%
+\def\etal{et~al.} % ``and others'', ``and co-workers''
+\def\eg{e.g.,~} % ``for example''
+\def\ie{i.e.,~} % ``that is'', ``in other words''
+\def\etc{etc} % ``and other things'', ``and so forth''
+\def\cf{cf.~} % ``compare''
+\def\viz{viz.~} % ``namely", ``precisely''
+\def\vs{vs.~} % ``against"
+
+% \newcommand\eg[]{e.g., }
+% \newcommand\ie[]{i.e., }
+% \newcommand\eg[0]{e.g.\ }
+% \newcommand\ie[0]{i.e.\ }
+% \newcommand\et[0]{et al.\ }
+
+%%%%%%%%%%%%%%%%%%%%
+%%%% Spell check
+%%%%%%%%%%%%%%%%%%%%
+
+% if you want to spell-check your document, you can use the command-line aspell, hunspell (preferably), or ispell programs.
+% E.g.:
+%       ispell yourfile.tex
+%   aspell --mode=tex -c yourfile.tex
+%   hunspell -l -t -i utf-8 yourfile.tex
+
+%% Word cound
+%If you want to count words you can, again, use LyX or convert your LaTeX source to plain text and use, for example, UNIX wc command:
+% detex yourfile | wc
+
+%%%%%%%%%%%%%%%%%%%%
+%% Hyphenated words
+%%%%%%%%%%%%%%%%%%%%
+%\hyphenation { hy-phen-a-tion mar-vel-ous-ly }

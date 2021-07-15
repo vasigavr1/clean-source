@@ -1,0 +1,129 @@
+\section{Introduction}
+\label{sec:introduction}
+
+
+Online services and cloud applications replicate their datasets to remain available in the face of faults. 
+Reliable replication protocols are deployed to maintain consistency among the replicas.
+This work focuses on the performance of strongly-consistent, fault-tolerant replication protocols for Get/Put Key-Value Stores deployed within the datacenter.
+
+The performance of replication protocols has been repeatedly evaluated on various deployments over the years~\cite{Ailijiang:2019}. However traditional protocol design and evaluation has not taken into account \emph{modern hardware}. 
+What do we mean by modern hardware, and why is it important when comparing the performance of protocols?
+
+\custvspace
+
+Over the last 10-15 years, the server-grade hardware landscape has changed drastically~\cite{Barroso:2017}.
+Servers with two or four cores per chip have given way to many-core chips with tens of cores, kernel-based 1 Gbps networking has given way to user-level networking with 10s or 100s of Gbps and finally, main memory has been scaled to 100s of GBs with 10s of Gbps worth of bandwidth. 
+These advances challenge the conventional wisdom on protocol design in two ways.
+
+\custvspace
+Firstly, to benefit from the significant increase in hardware-level parallelism across compute, network, and memory, protocols must be multi-threaded. %
+Indeed, a single-threaded protocol not only fails to utilize the available cores in a many-core system, but also the available network and memory bandwidth~\cite{Li:2016,Kalia:2016}.
+
+Problematically, traditional protocol design has seldom considered threading; rather it has typically assumed that each node consists of a single serial process. 
+For instance, a leader-based protocol specification typically assumes and often relies on the fact that the leader executes serially.
+Unsurprisingly, designing protocols without considering threading often results in non-scalable protocols. %
+
+\custvspace
+The second aspect of protocol design challenged by modern hardware is the need (or the lack thereof) for optimizing around the millisecond I/O speed. 
+Specifically, protocols have traditionally been designed to: 1) reduce the number of messages per request and 2) avoid random memory look-ups which could result in disk accesses. Achieving these properties at the cost of thread-scalability or load balancing has been considered to be an acceptable trade-off.
+The reasoning is simple: in yesterday's world, either of these actions costs milliseconds and can therefore skyrocket the request's latency, resulting in user dissatisfaction and violations of the service-level agreements.
+
+
+This is no longer the case, however. 
+The hefty increase in main memory capacity has catalyzed the advent of in-memory databases~\cite{Lim:2014, Li:2016}; randomly accessing a memory object is now a nanosecond operation.
+Similarly, with modern, user-space and hardware-offloaded networking (e.g., RDMA), sending a message is a microsecond action~\cite{Dragojevic:2014}.
+Therefore, in the modern era, the protocol designer no longer needs to sacrifice properties such as thread-scalability or load balance in order to decrease latency. 
+
+In fact, in the modern era we argue that the opposite is true: in order to optimize latency, one should actually prioritize thread-scalability and load balance.
+Here is why. With networking and memory accounting for a few microseconds, the request latency does not typically exceed a few tens of microseconds on a lightly loaded system. 
+Therefore, to ensure microsecond latency, we need only ensure that the system is not overloaded.
+This calls for high-throughput protocols as they are less likely to be overloaded by the target throughput. 
+To maximize throughput,  thread-scalability and load balance should be prioritized over traditional metrics such as number of messages per request.
+Our evaluation corroborates this hypothesis (\S~\ref{sec:ev}).
+
+\beginbsec{Research questions}
+Thus far, we have argued that modern hardware has challenged conventional wisdom on protocol performance. How do protocols proposed in the literature perform on modern hardware? If one wishes to design a new protocol, what are the best practices one should adhere to? 
+
+In order to provide the answers we set out to evaluate and compare strongly-consistent replication protocols deployed on modern hardware 
+over a state-of-the-art replicated Key-Value Store.
+Below we analyze the challenges in performing this study, how we tackle them and finally the contributions of this paper.
+
+\beginbsec{A taxonomy for protocol selection (\S\ref{sec:tax})}
+Firstly, it is neither feasible not tractable to meaningfully compare every single proposed protocol.
+We must therefore select a few representative protocols that capture the design space, allowing us to extrapolate their results to the rest. 
+To this end, we first develop a taxonomy of existing protocols, classifying them into four classes based on their operational patterns (\secref{sec:tax}).
+To understand the performance of the different classes of protocols, we carefully select \pnum~protocols for analysis:
+ZAB~\cite{Hunt:2010},  
+Multi-Paxos~\cite{Lamport:2001}, 
+CHT and multi-leader CHT~\cite{Chandra:2016}, 
+CRAQ~\cite{Terrace:2009}, 
+Derecho~\cite{Jha:2019}, 
+Classic Paxos (CP)~\cite{Lamport:1998}, 
+All-Aboard Paxos~\cite{Howard:2019}, 
+ABD~\cite{Lynch:1997} and 
+Hermes~\cite{A:2020}. 
+
+
+\beginbsec{\odlib: building protocols in the modern era (\S\ref{sec:od})}
+The second challenge is facilitating 
+an apples-to-apples comparison that extracts maximum performance from each of these protocols on modern hardware. 
+To overcome this challenge, 
+we present \odlib, a framework tailored towards protocol implementation for multi-threaded, \RDMA-enabled, in-memory, replicated KVSes. 
+Specifically, \odlib\ provides the functionality to perform all the non-protocol-specific tasks, such as initializing and connecting the nodes, managing the KVS and sending/receiving \RDMA\ messages.
+These tasks can account for up to 90\% of the codebase for the replication protocol, requiring domain-specific knowledge in networking and KVSes. With these tasks out of the way, the developer can focus on coding solely the protocol-specific components, significantly accelerating the development process, while also producing more reliable code. We implement all \pnum~protocols on top of \odlib. 
+
+
+
+\beginbsec{Comparison results (\S~\ref{sec:ev})}
+We answer the questions posed earlier by analyzing the results of our
+comparison of \pnum\ strongly-consistent replication protocols implemented over \odlib.
+Firstly, we characterize
+the performance capabilities of each class of protocols along with its possible optimizations. 
+This characterization allows us to provide an informed recommendation to those who seek to deploy an existing protocol, based on their needs.
+Secondly, the characterization reveals the relative importance and performance impact of properties such as thread-scalability, load balance, and the work-per-request ratio (\ie  the total cpu, network and memory resources required to complete a single request).
+By analyzing the effect of modern hardware on how such properties impact performance, we hope to inform the decisions of the protocol designer and steer the research community towards a more hardware-aware discussion.
+
+
+
+\beginbsec{Limitations}
+This work investigates the performance of strongly-consistent, fault-tolerant replication protocols for Get/Put replicated KVSes deployed within the datacenter. Note the limitations. We focus on strongly consistent protocols and not on weaker consistency models. We focus on reads and writes but not transactions. We assume a local area network and not geo-replication. Finally, we quantify the performance but not the availability guarantees of these protocols. (However, \secref{sec:fail} discusses the qualitative impact of design decisions on availability.)
+
+
+\beginbsec{Contributions} Summarizing, this work presents the following contributions.
+\squishlistContrib
+\item We present a taxonomy of strongly-consistent replication protocols based on their operational patterns (\S\ref{sec:tax}).
+\item We introduce \odlib, a framework that allows developers to  
+easily design, measure and deploy replication protocols over modern hardware (\S\ref{sec:od}).
+\item To the best of our knowledge, this paper presents the first ever implementation and evaluation of All-Aboard Paxos, CHT and CHT-multi-leader. 
+\item Using \odlib, we implement and evaluate \pnum~protocols that  
+span the design space of strongly-consistent protocols, presenting the first  
+apples-to-apples comparison over modern hardware.
+Our evaluation provides a complete characterization of the replication protocol design space and reveals the impact of modern hardware on the performance of replication protocols (\S\ref{sec:ev}).
+
+
+
+\squishend
+
+{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

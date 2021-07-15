@@ -1,0 +1,26 @@
+
+\y{
+\beginbsec{Skewed workloads}
+Our evaluation does not investigate the sensitivity of replication protocols under a skewed workload (\eg zipfian distribution~\cite{Novakovic:2016}). This is not an oversight. 
+
+It is possible to apply an optimization where reads and writes to the most popular keys (\ie the \qt{hot keys}) can be combined within each server by leveraging the fact that: 1) 
+a server can efficiently keep track of the hot keys~\cite{S-Li:2016, Metwally:2005, Cormode:2008} and 2) at any given moment, a server is expected to be working on multiple requests for each of the hot keys.
+This optimization turns skew from problem to opportunity. This is not a surprise: researches have repeatedly observed that skew is a form of locality, and as such it can be leveraged to increase performance~\cite{Priyank:2019,S-Li:2016, A&V:2018, L1:2020}.
+
+Notably, the optimization is equally applicable to all \pnum\ protocols.
+Consequently, 
+evaluating the protocols without the optimization would paint a false picture, suggesting that protocols suffer under skew, when in reality they can thrive under it. 
+However, 
+the optimization will take a different shape for each protocol. Therefore, incorporating the optimization to all \pnum\ protocols will require substantial research  
+and we leave it for future work.
+
+
+
+}
+
+
+
+
+
+
+

@@ -1,0 +1,64 @@
+\def\systemnameRaw{}
+\def\systemname{\systemnameRaw\xspace}
+
+\PassOptionsToPackage{table,xcdraw,dvipsnames}{xcolor}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{naturalnames}{hyperref}
+
+\documentclass[sigplan,screen]{acmart}
+\settopmatter{printacmref=false, printccs=true, printfolios=false}
+
+
+\copyrightyear{2021}
+\acmYear{2021}
+\setcopyright{acmcopyright}\acmConference[PaPoC'21]{8th Workshop on Principles and Practice of Consistency for Distributed Data}{April 26, 2021}{Online, United Kingdom}
+\acmBooktitle{8th Workshop on Principles and Practice of Consistency for Distributed Data (PaPoC'21), April 26, 2021, Online, United Kingdom}
+\acmPrice{15.00}
+\acmDOI{10.1145/3447865.3457964}
+\acmISBN{978-1-4503-8338-7/21/04}
+
+
+\input{1_packages.tex}
+\input{2_macros_n_comments.tex}
+
+
+\def\ourtitle{Towards the Synthesis of Coherence/Replication Protocols from Consistency Models via Real-Time Orderings}
+\title[Synthesis of Coherence/Replication Protocols from Consistency Models] { \ourtitle}
+\author{}
+\date{}
+
+
+
+\begin{document}
+\input{0_authors/author-acm}
+\input{0_sections/0_abstract.tex}
+\maketitle
+
+
+
+
+\input{0_sections/1_Introduction.tex}
+\input{0_sections/2_Model2}
+\input{0_sections/3_rt-orderings}
+\input{0_sections/4_Consistency2}
+
+\input{0_sections/5_rt_and_consistency}
+\input{0_sections/6_rt_to_cons}
+\input{0_sections/7_dc to_protocols}
+\input{0_sections/9_Discussion}
+\input{0_sections/8_RelatedWork}
+\input{0_sections/9_conclusion}
+
+\input{0_sections/9z_Acks}
+
+
+
+
+\bibliographystyle{IEEEtranS}
+\bibliography{paper}
+
+
+
+
+\end{document} 

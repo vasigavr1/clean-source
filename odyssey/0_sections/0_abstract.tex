@@ -1,0 +1,63 @@
+\begin{abstract}
+% \subsection*{Abstract}
+Get/Put Key-Value Stores (KVSes) rely on replication protocols to enforce consistency and guarantee availability.
+Today's modern hardware, with manycore servers and RDMA-capable networks, challenges the conventional wisdom on protocol design.
+In this paper, we investigate the impact of modern hardware on the performance of strongly-consistent replication protocols.
+
+First, we create an informal taxonomy of replication protocols, based on which we carefully select 10 protocols for analysis.
+Secondly, we present Odyssey, a framework tailored towards protocol implementation for multi-threaded, RDMA-enabled, in-memory, replicated KVSes. We implement all 10 protocols over Odyssey, and perform the first apples-to-apples comparison of replication protocols over modern hardware.
+
+Our comparison characterizes the protocol design space, revealing the performance capabilities of different classes of protocols on modern hardware. 
+Among other things, our results 
+demonstrate that some of the protocols that were efficient in yesterday's hardware are not so today because they cannot take advantage of the abundant parallelism and fast networking present in modern hardware. Conversely, some protocols that were inefficient in yesterday's hardware are very attractive today.
+We distill our findings in a concise set of general guidelines and recommendations for protocol selection and design in the era of modern hardware.
+% While protocols that can scale on modern hardware can 
+% that are present in modern hardware.
+\end{abstract}
+
+% The characterization demonstrates that to achieve high throughput and low latency, protocols must take advantage of the abundant parallelism and the fast networking that are present in modern hardware.
+% Exemplifying this paradigm shift is the drastic impact of multi-threading on the relative performance of protocols.
+% We distill our findings in a concise set of general guidelines and recommendations for protocol selection and protocol design in the era of modern hardware.
+
+% mustprotocol design in the era of modern hardware must take into  account the abundant parallelism and the fast networking
+% The impact of modern hardware on protocol performance is exemplified
+% in the era of modern hardware.
+% Furthermore, we demonstrate that modern hardware challenges the conventional wisdom in protocol design, shifting the focus towards parallelism. Exemplifying this paradigm shift is the drastic impact of multi-threading on the relative performance of protocols. 
+% For instance, ZAB outperforms Classic Paxos by more than 2x when both are single-threaded, but the result is inverted when they are multi-threaded.
+
+% The insights gained from viewing protocols through a hardware-aware lens, inform both protocol selection and protocol design
+
+% Our comparison characterizes the protocol design space, revealing the performance capabilities of different classes of protocols and the relative importance of design decisions in the era of modern hardware. The insights gained from viewing protocols through a hardware-aware lens, inform both protocol selection and protocol design
+
+% No-SQL Key-Value Stores (KVSes), that underpin modern online services, rely on strongly-consistent protocols to offer a highly available read / (conditional) write interface.
+% The ubiquitous 
+% Get/Put Key-Value Stores (KVSes) rely on replication protocols to enforce consistency and guarantee availability.
+% % Over the last 30 year, numerous such protocols have been proposed attempting to maximize performance. 
+% Today's modern hardware, with manycore servers and RDMA-capable networks, challenge the conventional wisdom on protocol design.
+% %radically change the requirements of protocol design.
+% % Plainly, a protocol that was efficient 10 years ago for a four-core server may not be so today, if it cannot scale across cores. Vice versa, a once slow protocol may be very efficient today, if it is scalable.
+% % Today's modern hardware, with manycore servers with tens of cores and RDMA-capable networks challenge the traditional wisdom on protocol design.
+% % In this paper, we pose two questions. How do existing protocols perform on modern hardware and what are the best design practices? 
+% In this paper we investigate the impact of modern hardware on the performance of existing protocols and on design practices.
+
+% First we create an informal taxonomy of replication protocols, based on which we carefully select 10 protocols for analysis.
+% % : ZAB, Multi-Paxos, 
+% % Derecho, CHT, CHT-multi-ldr, CRAQ, Classic Paxos, All-aboard Paxos, ABD and Hermes.
+% Secondly, we present Pixie, a framework tailored towards protocol implementation for multi-threaded, RDMA-enabled, in-memory, replicated KVSes. We implement all 10 protocols over Pixie, and perform the first apples-to-apples comparison of replication protocols over modern hardware.
+
+% The results of the comparison demonstrate that modern hardware forces us to shift the focus to parallelism and load balance instead of message rounds per request. Exemplifying this paradigm shift is the impact of multi-threading on the relative performance of protocols. 
+% For instance, ZAB outperforms Classic Paxos (CP) by more than 2x when both are single-threaded, but the result is inverted when they are multi-threaded.
+
+
+
+
+
+
+%\end{abstract}
+
+% A category with the (minimum) three required fields
+%\category{D.4.1}{Operating Systems}{Process Management}, {Multiprocessing}
+%\category{D.4.4}{Operating Systems}{Communications Management}, {Network Communication}
+%\category{D.4.7}{Operating Systems}{Organization and Design}, {Distributed Systems}
+%\terms{Theory}
+%\keywords{Design, Reliability, Performance, Security, Web, } % NOT required for Proceedings

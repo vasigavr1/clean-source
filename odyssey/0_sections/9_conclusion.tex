@@ -1,0 +1,36 @@
+\section{Conclusion and Lessons Learned}
+\label{sec:conclusion}
+% \FloatBarrier{}
+
+The goal of the paper is to uncover the impact of modern hardware on the performance of strongly-consistent replication protocols.
+To this end, we presented \odlib, a framework that enables the fast development and deployment of replication protocols over modern hardware. 
+Over \odlib, we built and evaluated \pnum\ protocols. 
+Extrapolating their results to the entire design space through an informal taxonomy, we provided a characterization of strongly-consistent replication protocols.
+
+%\beginbsec{Lessons learned}
+% Let us summarize the lessons learned. %distill
+On the system side, we experienced first-hand the necessity for a reliable, high-performance framework to design, build and deploy replication protocols. Without it, system-level bugs (networking, KVS etc.) become a black hole for developer time.
+In hindsight, this is no surprise: clean interfaces that abstract orthogonal components have been the cornerstone of computer science. %, and enables one to focus on the important stuff. %expertise,
+%, is well established.
+Nevertheless, 
+% \antonis{May replace "Nevertheless" w/ "With that in place" or smthing better} 
+we were pleasantly surprised to see that we can build and deploy a new protocol in two days (\S\ref{sec:why}). 
+%Again, in hindsight, there is no reason why a simple protocol with a clean specification should take more time. Yet, we were pleasantly surprised.
+
+When it comes to protocol design, the overarching lesson is that the true limits of a protocol will be uncovered only when all artificially imposed bottlenecks have been removed. 
+Plainly, this calls for highly-optimized, multi-threaded and \RDMA-enabled implementations. 
+It is very telling that ZAB outperforms Classic Paxos (CP) by more than 2x when both are single-threaded, but the result is inverted when they are multi-threaded. 
+The pseudo bottleneck of single-thread implementations conceal ZAB's inefficiencies while holding back CP's capabilities. Multi-threading removes the bottleneck, laying bare the true nature of the protocols.
+%bare, once the bottleneck is removed.
+% Multi-threading the protocols lays their true nature
+
+
+% This means that we need to invest effort on stressing he hardware multi-threading and 
+
+% Without the framework, the developer will most likely spent the overwhelming majority of her time dealing with bugs in the RDMA networking layer. 
+% dealing with bizarre design choices and delphian user manuals of 
+% Firstly, our characterization demonstrated the importance of investing on multi-threading in the modern era.
+% and it showcased that multi-threading changes the relative
+
+% thread-scalability in the modern era multi-threading the protocol implementations
+% demonstrated the relative impact of thread-scalability, load balance and the work-per-request ratio and shed light on how such properties are affected by operational patterns such as totally ordering all writes or having a leader. 
